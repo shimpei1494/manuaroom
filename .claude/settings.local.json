@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_fill_form",
+      "Bash(vp build*)",
+      "Bash(vp check*)",
+      "Bash(vp dev*)",
+      "Bash(vp preview*)",
+      "Bash(vp test*)",
+      "Bash(vp run doctor*)",
+      "Bash(vp run knip*)",
+      "Bash(vp run fix*)"
+    ]
+  }
+}

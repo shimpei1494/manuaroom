@@ -1,0 +1,50 @@
+{
+  "name": "tanstack-start-start",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vp build",
+    "check": "vp check",
+    "dev": "vp dev",
+    "doctor": "react-doctor . --verbose --yes --no-lint",
+    "fix": "vp check --fix",
+    "knip": "knip",
+    "preview": "vp preview",
+    "test": "vp test",
+    "type-check": "vp check --no-lint"
+  },
+  "dependencies": {
+    "@mantine/core": "^9.2.1",
+    "@mantine/hooks": "^9.2.1",
+    "@tanstack/react-router": "^1.169.2",
+    "@tanstack/react-start": "^1.167.65",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@tanstack/react-router-devtools": "^1.166.13",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "better-typescript-lib": "^2.12.0",
+    "knip": "^6.12.1",
+    "postcss": "^8.5.3",
+    "postcss-preset-mantine": "^1.17.0",
+    "postcss-simple-vars": "^7.0.1",
+    "react-doctor": "^0.1.0",
+    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.20",
+    "vite-plus": "latest"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+      "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+    },
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
