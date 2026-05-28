@@ -17,7 +17,19 @@
       "Bash(vp add *)",
       "Bash(vp fmt *)",
       "Bash(vp run *)",
-      "Bash(vp lint *)"
+      "Bash(vp lint *)",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_click",
+      "mcp__mantine__list_items",
+      "mcp__mantine__get_item_doc",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_file_upload",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_console_messages"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "mantine",
+    "playwright"
+  ]
 }
