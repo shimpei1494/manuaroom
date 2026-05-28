@@ -1,0 +1,9 @@
+.agents/
+.claude/
+node_modules/
+dist/
+.output/
+.cache/
+.data/
+pnpm-lock.yaml
+drizzle/

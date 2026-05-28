@@ -46,7 +46,7 @@ _Avoid_: 確定、保留
 アプリの利用者。MVP では `local-user-1` 固定。すべての主要エンティティに `user_id` が紐づく。将来 Better Auth + Google OAuth に置き換える。
 _Avoid_: アカウント、オーナー
 
-**Household（世帯）** — *未実装、将来導入予定*:
+**Household（世帯）** — _未実装、将来導入予定_:
 1人以上の User が所属する共有グループ。導入後は Product / Manual / Maintenance Task などの所有者は User ではなく Household になる。家族で家電管理を共有するユースケースに対応するためのモデル。MVP では存在しないが、データモデルは将来 `household_id` を追加できる前提で設計する（参照: ADR）。
 _Avoid_: 家族、ファミリー、ワークスペース
 
