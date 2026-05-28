@@ -2,8 +2,9 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 
 import { getRuntimeEnv } from "../env/runtime-env";
+import * as schema from "./schema";
 
-type Db = ReturnType<typeof drizzle>;
+type Db = ReturnType<typeof drizzle<typeof schema>>;
 
 let cached: Db | null = null;
 
@@ -14,6 +15,6 @@ export function getDb(): Db {
     url: env.DATABASE_URL,
     authToken: env.DATABASE_AUTH_TOKEN,
   });
-  cached = drizzle(client);
+  cached = drizzle(client, { schema });
   return cached;
 }
