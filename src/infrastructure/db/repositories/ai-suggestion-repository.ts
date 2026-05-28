@@ -35,9 +35,15 @@ function fromRow(row: Row): AiSuggestion {
 
 export function createAiSuggestionRepository(db: Db): AiSuggestionRepositoryPort {
   return {
-    async createMany(suggestions) {
-      if (suggestions.length === 0) return;
-      await db.insert(aiSuggestions).values(suggestions.map(toRow));
+    async replaceByManual({ userId, manualId, suggestions }) {
+      await db.transaction(async (tx) => {
+        await tx
+          .delete(aiSuggestions)
+          .where(and(eq(aiSuggestions.userId, userId), eq(aiSuggestions.manualId, manualId)));
+        if (suggestions.length > 0) {
+          await tx.insert(aiSuggestions).values(suggestions.map(toRow));
+        }
+      });
     },
     async findById({ userId, suggestionId }) {
       const rows = await db
@@ -61,11 +67,6 @@ export function createAiSuggestionRepository(db: Db): AiSuggestionRepositoryPort
         .update(aiSuggestions)
         .set({ status })
         .where(and(eq(aiSuggestions.userId, userId), eq(aiSuggestions.id, suggestionId)));
-    },
-    async deleteByManual({ userId, manualId }) {
-      await db
-        .delete(aiSuggestions)
-        .where(and(eq(aiSuggestions.userId, userId), eq(aiSuggestions.manualId, manualId)));
     },
   };
 }
