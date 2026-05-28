@@ -30,3 +30,18 @@
 
 - ドキュメント: https://mantine.dev/llms.txt (コンパクト版)
 - フル版: https://mantine.dev/llms-full.txt
+
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (`github.com/shimpei1494/manuaroom`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Uses the default five-label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
