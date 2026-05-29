@@ -10,6 +10,8 @@ import {
 } from "@mantine/core";
 import { DatesProvider } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
+import { ModalsProvider } from "@mantine/modals";
+import { Notifications } from "@mantine/notifications";
 import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import dayjs from "dayjs";
@@ -21,6 +23,7 @@ import { ColorSchemeToggle } from "../components/ColorSchemeToggle";
 import appCss from "../styles.css?url";
 import mantineCss from "@mantine/core/styles.css?url";
 import mantineDatesCss from "@mantine/dates/styles.css?url";
+import mantineNotificationsCss from "@mantine/notifications/styles.css?url";
 
 dayjs.locale("ja");
 
@@ -31,6 +34,7 @@ export const Route = createRootRoute({
     links: [
       { href: mantineCss, rel: "stylesheet" },
       { href: mantineDatesCss, rel: "stylesheet" },
+      { href: mantineNotificationsCss, rel: "stylesheet" },
       { href: appCss, rel: "stylesheet" },
     ],
     meta: [
@@ -45,7 +49,10 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <html lang="ja">
+    // Mantine's ColorSchemeScript runs before hydration and sets data-mantine-color-scheme on
+    // <html>, which differs from what the server rendered. suppressHydrationWarning silences the
+    // expected mismatch on this single attribute.
+    <html lang="ja" suppressHydrationWarning>
       <head>
         <HeadContent />
         <ColorSchemeScript defaultColorScheme="auto" />
@@ -53,9 +60,12 @@ function RootComponent() {
       <body>
         <MantineProvider defaultColorScheme="auto">
           <DatesProvider settings={{ locale: "ja", firstDayOfWeek: 0, weekendDays: [0, 6] }}>
-            <Shell>
-              <Outlet />
-            </Shell>
+            <ModalsProvider labels={{ confirm: "はい", cancel: "キャンセル" }}>
+              <Notifications position="top-right" />
+              <Shell>
+                <Outlet />
+              </Shell>
+            </ModalsProvider>
           </DatesProvider>
         </MantineProvider>
         <TanStackRouterDevtools position="bottom-right" />

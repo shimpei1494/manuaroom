@@ -46,6 +46,10 @@ export default defineConfig({
     rules: {
       ...reactDoctorRules,
       "no-default-export": "error",
+      // Mantine の modals.openConfirmModal({ onConfirm: ... }) のような
+      // コールバックプロパティ経由の navigate を render 中の呼び出しと
+      // 誤検出するため off にしている。
+      "react-doctor/tanstack-start-no-navigate-in-render": "off",
     },
   },
   staged: {

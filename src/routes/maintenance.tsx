@@ -1,5 +1,5 @@
-import { Badge, Group, Paper, Stack, Table, Text, Title } from "@mantine/core";
-import { Anchor, Button } from "@mantine/core";
+import { Anchor, Badge, Button, Group, Paper, Stack, Table, Text, Title } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import dayjs from "dayjs";
@@ -152,7 +152,14 @@ function Row({ task, product }: { task: MaintenanceTask; product: Product | unde
             setBusy(true);
             try {
               await markDone({ data: { taskId: task.id } });
+              notifications.show({ color: "green", message: "完了を記録しました" });
               await router.invalidate();
+            } catch (e) {
+              notifications.show({
+                color: "red",
+                title: "完了に失敗しました",
+                message: e instanceof Error ? e.message : String(e),
+              });
             } finally {
               setBusy(false);
             }

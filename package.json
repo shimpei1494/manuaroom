@@ -23,6 +23,8 @@
     "@mantine/dates": "^9.2.2",
     "@mantine/form": "^9.2.2",
     "@mantine/hooks": "^9.2.2",
+    "@mantine/modals": "^9.2.2",
+    "@mantine/notifications": "^9.2.2",
     "@tanstack/react-router": "^1.169.2",
     "@tanstack/react-start": "^1.167.65",
     "dayjs": "^1.11.21",

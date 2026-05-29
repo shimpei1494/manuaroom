@@ -22,6 +22,8 @@ import {
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
+import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
 import { Link, createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import dayjs from "dayjs";
@@ -32,12 +34,17 @@ import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task"
 import { INTERVAL_UNIT_VALUES } from "../../domain/maintenance/maintenance-task";
 import type { Manual } from "../../domain/manual/manual";
 import type { Product } from "../../domain/product/product";
-import { listAiSuggestionsFn } from "../../server-functions/ai-suggestions";
-import { acceptAiSuggestionFn, rejectAiSuggestionFn } from "../../server-functions/ai-suggestions";
+import {
+  acceptAiSuggestionFn,
+  listAiSuggestionsFn,
+  rejectAiSuggestionFn,
+} from "../../server-functions/ai-suggestions";
 import {
   createMaintenanceTaskFn,
+  deleteMaintenanceTaskFn,
   listMaintenanceTasksFn,
   markMaintenanceDoneFn,
+  updateMaintenanceTaskFn,
 } from "../../server-functions/maintenance-tasks";
 import {
   analyzeManualFn,
@@ -96,6 +103,32 @@ function ProductHeader({ product }: { product: Product }) {
   const [editOpened, edit] = useDisclosure(false);
   const [deleting, setDeleting] = useState(false);
 
+  const handleDelete = () => {
+    modals.openConfirmModal({
+      title: "製品を削除",
+      centered: true,
+      children: (
+        <Text size="sm">
+          「{product.name}」を削除します。紐づく説明書・メンテナンスタスクも全て削除されます。
+        </Text>
+      ),
+      labels: { confirm: "削除", cancel: "キャンセル" },
+      confirmProps: { color: "red" },
+      onConfirm: async () => {
+        setDeleting(true);
+        try {
+          await deleteFn({ data: { productId: product.id } });
+          notifications.show({ color: "green", message: "製品を削除しました" });
+          await navigate({ to: "/products" });
+        } catch (e) {
+          notifications.show({ color: "red", title: "削除に失敗しました", message: errMessage(e) });
+        } finally {
+          setDeleting(false);
+        }
+      },
+    });
+  };
+
   return (
     <Stack gap="xs">
       <Anchor component={Link} to="/products" size="sm">
@@ -107,21 +140,7 @@ function ProductHeader({ product }: { product: Product }) {
           <Button variant="default" onClick={edit.open}>
             編集
           </Button>
-          <Button
-            color="red"
-            variant="light"
-            loading={deleting}
-            onClick={async () => {
-              if (!confirm(`「${product.name}」を削除します。よろしいですか？`)) return;
-              setDeleting(true);
-              try {
-                await deleteFn({ data: { productId: product.id } });
-                await navigate({ to: "/products" });
-              } finally {
-                setDeleting(false);
-              }
-            }}
-          >
+          <Button color="red" variant="light" loading={deleting} onClick={handleDelete}>
             削除
           </Button>
         </Group>
@@ -131,6 +150,7 @@ function ProductHeader({ product }: { product: Product }) {
           product={product}
           onSaved={async () => {
             edit.close();
+            notifications.show({ color: "green", message: "製品を更新しました" });
             await router.invalidate();
           }}
         />
@@ -170,20 +190,24 @@ function EditProductForm({ product, onSaved }: { product: Product; onSaved: () =
   return (
     <form
       onSubmit={form.onSubmit(async (values) => {
-        await update({
-          data: {
-            productId: product.id,
-            name: values.name.trim(),
-            manufacturer: emptyToNull(values.manufacturer),
-            modelNumber: emptyToNull(values.modelNumber),
-            category: emptyToNull(values.category),
-            location: emptyToNull(values.location),
-            purchaseDate: values.purchaseDate,
-            warrantyUntil: values.warrantyUntil,
-            memo: emptyToNull(values.memo),
-          },
-        });
-        onSaved();
+        try {
+          await update({
+            data: {
+              productId: product.id,
+              name: values.name.trim(),
+              manufacturer: emptyToNull(values.manufacturer),
+              modelNumber: emptyToNull(values.modelNumber),
+              category: emptyToNull(values.category),
+              location: emptyToNull(values.location),
+              purchaseDate: values.purchaseDate,
+              warrantyUntil: values.warrantyUntil,
+              memo: emptyToNull(values.memo),
+            },
+          });
+          onSaved();
+        } catch (e) {
+          notifications.show({ color: "red", title: "更新に失敗しました", message: errMessage(e) });
+        }
       })}
     >
       <Stack>
@@ -262,7 +286,7 @@ function ManualsSection({
   const upload = useServerFn(uploadManualFn);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [previewManual, setPreviewManual] = useState<Manual | null>(null);
 
   return (
     <Stack gap="sm">
@@ -276,11 +300,7 @@ function ManualsSection({
               placeholder="PDF ファイルを選択"
               accept="application/pdf"
               value={file}
-              onChange={(value) => {
-                setError(null);
-                setFile(value);
-              }}
-              error={error}
+              onChange={setFile}
               clearable
             />
             <Button
@@ -289,16 +309,20 @@ function ManualsSection({
               onClick={async () => {
                 if (!file) return;
                 setUploading(true);
-                setError(null);
                 try {
                   const formData = new FormData();
                   formData.append("productId", productId);
                   formData.append("file", file);
                   await upload({ data: formData });
                   setFile(null);
+                  notifications.show({ color: "green", message: "説明書をアップロードしました" });
                   await router.invalidate();
                 } catch (e) {
-                  setError(e instanceof Error ? e.message : String(e));
+                  notifications.show({
+                    color: "red",
+                    title: "アップロードに失敗しました",
+                    message: errMessage(e),
+                  });
                 } finally {
                   setUploading(false);
                 }
@@ -322,32 +346,130 @@ function ManualsSection({
               key={manual.id}
               manual={manual}
               suggestions={suggestionsByManualId[manual.id] ?? []}
+              onPreview={() => {
+                setPreviewManual(manual);
+              }}
             />
           ))}
         </Stack>
       )}
+
+      <PdfPreviewModal
+        manual={previewManual}
+        onClose={() => {
+          setPreviewManual(null);
+        }}
+      />
     </Stack>
   );
 }
 
-function ManualCard({ manual, suggestions }: { manual: Manual; suggestions: AiSuggestion[] }) {
+function PdfPreviewModal({ manual, onClose }: { manual: Manual | null; onClose: () => void }) {
+  return (
+    <Modal
+      opened={manual !== null}
+      onClose={onClose}
+      title={manual?.fileName ?? ""}
+      size="90%"
+      padding={0}
+    >
+      {manual && (
+        <iframe
+          title={manual.fileName}
+          src={`/api/manuals/${manual.id}/file`}
+          style={{ width: "100%", height: "80vh", border: 0, display: "block" }}
+        />
+      )}
+    </Modal>
+  );
+}
+
+function ManualCard({
+  manual,
+  suggestions,
+  onPreview,
+}: {
+  manual: Manual;
+  suggestions: AiSuggestion[];
+  onPreview: () => void;
+}) {
   const router = useRouter();
   const analyze = useServerFn(analyzeManualFn);
   const remove = useServerFn(deleteManualFn);
   const [analyzing, setAnalyzing] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const pending = suggestions.filter((s) => s.status === "pending");
   const accepted = suggestions.filter((s) => s.status === "accepted");
   const rejected = suggestions.filter((s) => s.status === "rejected");
+
+  const handleAnalyze = async () => {
+    setAnalyzing(true);
+    const notifId = notifications.show({
+      loading: true,
+      message: "AI 解析中…",
+      autoClose: false,
+      withCloseButton: false,
+    });
+    try {
+      const result = await analyze({ data: { manualId: manual.id } });
+      notifications.update({
+        id: notifId,
+        loading: false,
+        color: "green",
+        title: "解析完了",
+        message: `${result.length.toString()} 件の候補が抽出されました`,
+        autoClose: 4000,
+        withCloseButton: true,
+      });
+      await router.invalidate();
+    } catch (e) {
+      notifications.update({
+        id: notifId,
+        loading: false,
+        color: "red",
+        title: "解析に失敗しました",
+        message: errMessage(e),
+        autoClose: 6000,
+        withCloseButton: true,
+      });
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const handleDelete = () => {
+    modals.openConfirmModal({
+      title: "説明書を削除",
+      centered: true,
+      children: <Text size="sm">「{manual.fileName}」を削除します。</Text>,
+      labels: { confirm: "削除", cancel: "キャンセル" },
+      confirmProps: { color: "red" },
+      onConfirm: async () => {
+        setDeleting(true);
+        try {
+          await remove({ data: { manualId: manual.id } });
+          notifications.show({ color: "green", message: "説明書を削除しました" });
+          await router.invalidate();
+        } catch (e) {
+          notifications.show({
+            color: "red",
+            title: "削除に失敗しました",
+            message: errMessage(e),
+          });
+        } finally {
+          setDeleting(false);
+        }
+      },
+    });
+  };
 
   return (
     <Card withBorder padding="md">
       <Stack gap="sm">
         <Group justify="space-between" align="flex-start" wrap="nowrap">
           <Stack gap={2}>
-            <Anchor href={`/api/manuals/${manual.id}/file`} target="_blank" rel="noopener">
+            <Anchor component="button" type="button" onClick={onPreview}>
               {manual.fileName}
             </Anchor>
             <Text size="xs" c="dimmed">
@@ -356,23 +478,15 @@ function ManualCard({ manual, suggestions }: { manual: Manual; suggestions: AiSu
           </Stack>
           <Group gap="xs">
             <AiStatusBadge status={manual.aiStatus} />
+            <Button size="xs" variant="default" onClick={onPreview}>
+              プレビュー
+            </Button>
             <Tooltip label="OpenAI でメンテナンス候補を抽出します">
               <Button
                 size="xs"
                 variant="light"
                 loading={analyzing || manual.aiStatus === "analyzing"}
-                onClick={async () => {
-                  setAnalyzing(true);
-                  setErrorMsg(null);
-                  try {
-                    await analyze({ data: { manualId: manual.id } });
-                    await router.invalidate();
-                  } catch (e) {
-                    setErrorMsg(e instanceof Error ? e.message : String(e));
-                  } finally {
-                    setAnalyzing(false);
-                  }
-                }}
+                onClick={handleAnalyze}
               >
                 AIで解析
               </Button>
@@ -382,26 +496,12 @@ function ManualCard({ manual, suggestions }: { manual: Manual; suggestions: AiSu
               color="red"
               variant="subtle"
               loading={deleting}
-              onClick={async () => {
-                if (!confirm(`「${manual.fileName}」を削除します。よろしいですか？`)) return;
-                setDeleting(true);
-                try {
-                  await remove({ data: { manualId: manual.id } });
-                  await router.invalidate();
-                } finally {
-                  setDeleting(false);
-                }
-              }}
+              onClick={handleDelete}
             >
               削除
             </Button>
           </Group>
         </Group>
-        {errorMsg && (
-          <Text size="sm" c="red">
-            {errorMsg}
-          </Text>
-        )}
         {suggestions.length > 0 && (
           <Stack gap="xs" mt="sm">
             <Text size="sm" fw={500}>
@@ -452,7 +552,17 @@ function SuggestionRow({ suggestion }: { suggestion: AiSuggestion }) {
               setBusy("accept");
               try {
                 await accept({ data: { suggestionId: suggestion.id } });
+                notifications.show({
+                  color: "green",
+                  message: "候補をメンテナンスタスクに登録しました",
+                });
                 await router.invalidate();
+              } catch (e) {
+                notifications.show({
+                  color: "red",
+                  title: "承認に失敗しました",
+                  message: errMessage(e),
+                });
               } finally {
                 setBusy(null);
               }
@@ -469,7 +579,14 @@ function SuggestionRow({ suggestion }: { suggestion: AiSuggestion }) {
               setBusy("reject");
               try {
                 await reject({ data: { suggestionId: suggestion.id } });
+                notifications.show({ color: "gray", message: "候補を却下しました" });
                 await router.invalidate();
+              } catch (e) {
+                notifications.show({
+                  color: "red",
+                  title: "却下に失敗しました",
+                  message: errMessage(e),
+                });
               } finally {
                 setBusy(null);
               }
@@ -508,6 +625,7 @@ function MaintenanceTasksSection({
   tasks: MaintenanceTask[];
 }) {
   const [createOpened, createDisclosure] = useDisclosure(false);
+  const [editingTask, setEditingTask] = useState<MaintenanceTask | null>(null);
   return (
     <Stack gap="sm">
       <Group justify="space-between" align="center">
@@ -531,7 +649,14 @@ function MaintenanceTasksSection({
             </Table.Thead>
             <Table.Tbody>
               {tasks.map((task) => (
-                <TaskRow key={task.id} task={task} manuals={manuals} />
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  manuals={manuals}
+                  onEdit={() => {
+                    setEditingTask(task);
+                  }}
+                />
               ))}
             </Table.Tbody>
           </Table>
@@ -542,21 +667,76 @@ function MaintenanceTasksSection({
         onClose={createDisclosure.close}
         title="メンテナンスタスクを追加"
       >
-        <CreateMaintenanceTaskForm productId={productId} onCreated={createDisclosure.close} />
+        <MaintenanceTaskForm mode="create" productId={productId} onDone={createDisclosure.close} />
+      </Modal>
+      <Modal
+        opened={editingTask !== null}
+        onClose={() => {
+          setEditingTask(null);
+        }}
+        title="メンテナンスタスクを編集"
+      >
+        {editingTask && (
+          <MaintenanceTaskForm
+            mode="edit"
+            productId={productId}
+            task={editingTask}
+            onDone={() => {
+              setEditingTask(null);
+            }}
+          />
+        )}
       </Modal>
     </Stack>
   );
 }
 
-function TaskRow({ task, manuals }: { task: MaintenanceTask; manuals: Manual[] }) {
+function TaskRow({
+  task,
+  manuals,
+  onEdit,
+}: {
+  task: MaintenanceTask;
+  manuals: Manual[];
+  onEdit: () => void;
+}) {
   const router = useRouter();
   const markDone = useServerFn(markMaintenanceDoneFn);
+  const deleteTask = useServerFn(deleteMaintenanceTaskFn);
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const overdue =
     task.nextDueDate !== null &&
     dayjs(task.nextDueDate).startOf("day").isBefore(dayjs().startOf("day"));
   const sourceManual =
     task.sourceManualId !== null ? manuals.find((m) => m.id === task.sourceManualId) : null;
+
+  const handleDelete = () => {
+    modals.openConfirmModal({
+      title: "タスクを削除",
+      centered: true,
+      children: <Text size="sm">「{task.title}」を削除します。履歴も全て削除されます。</Text>,
+      labels: { confirm: "削除", cancel: "キャンセル" },
+      confirmProps: { color: "red" },
+      onConfirm: async () => {
+        setDeleting(true);
+        try {
+          await deleteTask({ data: { taskId: task.id } });
+          notifications.show({ color: "green", message: "タスクを削除しました" });
+          await router.invalidate();
+        } catch (e) {
+          notifications.show({
+            color: "red",
+            title: "削除に失敗しました",
+            message: errMessage(e),
+          });
+        } finally {
+          setDeleting(false);
+        }
+      },
+    });
+  };
+
   return (
     <Table.Tr>
       <Table.Td>
@@ -589,7 +769,7 @@ function TaskRow({ task, manuals }: { task: MaintenanceTask; manuals: Manual[] }
         )}
       </Table.Td>
       <Table.Td>
-        <ActionIcon.Group>
+        <Group gap="xs" justify="flex-end" wrap="nowrap">
           <Button
             size="xs"
             variant="light"
@@ -598,7 +778,14 @@ function TaskRow({ task, manuals }: { task: MaintenanceTask; manuals: Manual[] }
               setBusy(true);
               try {
                 await markDone({ data: { taskId: task.id } });
+                notifications.show({ color: "green", message: "完了を記録しました" });
                 await router.invalidate();
+              } catch (e) {
+                notifications.show({
+                  color: "red",
+                  title: "完了に失敗しました",
+                  message: errMessage(e),
+                });
               } finally {
                 setBusy(false);
               }
@@ -606,39 +793,61 @@ function TaskRow({ task, manuals }: { task: MaintenanceTask; manuals: Manual[] }
           >
             完了
           </Button>
-        </ActionIcon.Group>
+          <ActionIcon variant="default" onClick={onEdit} aria-label="編集">
+            ✎
+          </ActionIcon>
+          <ActionIcon
+            color="red"
+            variant="subtle"
+            loading={deleting}
+            onClick={handleDelete}
+            aria-label="削除"
+          >
+            ×
+          </ActionIcon>
+        </Group>
       </Table.Td>
     </Table.Tr>
   );
 }
 
-type CreateTaskValues = {
+type TaskFormValues = {
   title: string;
   intervalValue: number | "";
   intervalUnit: string | null;
-  initialDueDate: Date | null;
+  dueDate: Date | null;
   memo: string;
   url: string;
 };
 
-function CreateMaintenanceTaskForm({
-  productId,
-  onCreated,
-}: {
-  productId: string;
-  onCreated: () => void;
-}) {
+type TaskFormProps =
+  | { mode: "create"; productId: string; onDone: () => void }
+  | { mode: "edit"; productId: string; task: MaintenanceTask; onDone: () => void };
+
+function MaintenanceTaskForm(props: TaskFormProps) {
   const router = useRouter();
   const create = useServerFn(createMaintenanceTaskFn);
-  const form = useForm<CreateTaskValues>({
-    initialValues: {
-      title: "",
-      intervalValue: "",
-      intervalUnit: null,
-      initialDueDate: null,
-      memo: "",
-      url: "",
-    },
+  const update = useServerFn(updateMaintenanceTaskFn);
+  const initial =
+    props.mode === "edit"
+      ? {
+          title: props.task.title,
+          intervalValue: (props.task.intervalValue ?? "") as number | "",
+          intervalUnit: props.task.intervalUnit ?? null,
+          dueDate: props.task.nextDueDate,
+          memo: props.task.memo ?? "",
+          url: props.task.url ?? "",
+        }
+      : {
+          title: "",
+          intervalValue: "" as const,
+          intervalUnit: null,
+          dueDate: null,
+          memo: "",
+          url: "",
+        };
+  const form = useForm<TaskFormValues>({
+    initialValues: initial,
     validate: {
       title: (v) => (v.trim().length === 0 ? "タスク名は必須です" : null),
       intervalValue: (v, values) => {
@@ -653,25 +862,53 @@ function CreateMaintenanceTaskForm({
       },
     },
   });
+  const submitLabel = props.mode === "edit" ? "保存" : "追加";
+  const dueDateLabel = props.mode === "edit" ? "次回予定日" : "初回予定日";
   return (
     <form
       onSubmit={form.onSubmit(async (values) => {
-        await create({
-          data: {
-            productId,
-            title: values.title.trim(),
-            intervalValue: values.intervalValue === "" ? null : values.intervalValue,
-            intervalUnit: (values.intervalUnit ?? null) as
-              | (typeof INTERVAL_UNIT_VALUES)[number]
-              | null,
-            initialDueDate: values.initialDueDate,
-            memo: emptyToNull(values.memo),
-            url: emptyToNull(values.url),
-          },
-        });
-        form.reset();
-        onCreated();
-        await router.invalidate();
+        const intervalValue = values.intervalValue === "" ? null : values.intervalValue;
+        const intervalUnit = (values.intervalUnit ?? null) as
+          | (typeof INTERVAL_UNIT_VALUES)[number]
+          | null;
+        try {
+          if (props.mode === "edit") {
+            await update({
+              data: {
+                taskId: props.task.id,
+                title: values.title.trim(),
+                intervalValue,
+                intervalUnit,
+                memo: emptyToNull(values.memo),
+                url: emptyToNull(values.url),
+                nextDueDate: values.dueDate,
+              },
+            });
+            notifications.show({ color: "green", message: "タスクを更新しました" });
+          } else {
+            await create({
+              data: {
+                productId: props.productId,
+                title: values.title.trim(),
+                intervalValue,
+                intervalUnit,
+                initialDueDate: values.dueDate,
+                memo: emptyToNull(values.memo),
+                url: emptyToNull(values.url),
+              },
+            });
+            notifications.show({ color: "green", message: "タスクを追加しました" });
+            form.reset();
+          }
+          props.onDone();
+          await router.invalidate();
+        } catch (e) {
+          notifications.show({
+            color: "red",
+            title: "保存に失敗しました",
+            message: errMessage(e),
+          });
+        }
       })}
     >
       <Stack>
@@ -698,16 +935,18 @@ function CreateMaintenanceTaskForm({
         </Group>
         <DateInput
           clearable
-          label="初回予定日"
-          description="未指定なら「今日 + 周期」で計算します"
+          label={dueDateLabel}
+          description={
+            props.mode === "create" ? "未指定なら「今日 + 周期」で計算します" : undefined
+          }
           valueFormat="YYYY/MM/DD"
-          {...form.getInputProps("initialDueDate")}
+          {...form.getInputProps("dueDate")}
         />
         <TextInput label="参考URL" placeholder="https://..." {...form.getInputProps("url")} />
         <Textarea label="メモ" autosize minRows={2} {...form.getInputProps("memo")} />
         <Group justify="flex-end">
           <Button type="submit" loading={form.submitting}>
-            追加
+            {submitLabel}
           </Button>
         </Group>
       </Stack>
@@ -745,4 +984,8 @@ function formatFileSize(bytes: number): string {
 function emptyToNull(value: string): string | null {
   const trimmed = value.trim();
   return trimmed.length === 0 ? null : trimmed;
+}
+
+function errMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
 }
