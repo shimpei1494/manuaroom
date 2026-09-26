@@ -1,5 +1,5 @@
 import type { Product } from "../../domain/product/product";
-import type { Deps } from "../../infrastructure/deps";
+import type { Deps } from "../deps";
 
 export type CreateProductInput = {
   name: string;
@@ -12,9 +12,12 @@ export type CreateProductInput = {
   memo?: string | null;
 };
 
-export async function createProduct(deps: Deps, input: CreateProductInput): Promise<Product> {
+export async function createProduct(
+  deps: Pick<Deps, "auth" | "clock" | "productRepository">,
+  input: CreateProductInput,
+): Promise<Product> {
   const userId = await deps.auth.requireUserId();
-  const now = new Date();
+  const now = deps.clock.now();
   const product: Product = {
     id: crypto.randomUUID(),
     userId,

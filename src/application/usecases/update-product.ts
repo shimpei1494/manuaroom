@@ -1,5 +1,6 @@
+import { NotFoundError } from "../../domain/errors";
 import type { Product } from "../../domain/product/product";
-import type { Deps } from "../../infrastructure/deps";
+import type { Deps } from "../deps";
 
 export type UpdateProductInput = {
   productId: string;
@@ -13,14 +14,17 @@ export type UpdateProductInput = {
   memo?: string | null;
 };
 
-export async function updateProduct(deps: Deps, input: UpdateProductInput): Promise<Product> {
+export async function updateProduct(
+  deps: Pick<Deps, "auth" | "clock" | "productRepository">,
+  input: UpdateProductInput,
+): Promise<Product> {
   const userId = await deps.auth.requireUserId();
   const existing = await deps.productRepository.findById({
     userId,
     productId: input.productId,
   });
   if (!existing) {
-    throw new Error(`Product not found: ${input.productId}`);
+    throw new NotFoundError("Product", input.productId);
   }
   const updated: Product = {
     ...existing,
@@ -32,7 +36,7 @@ export async function updateProduct(deps: Deps, input: UpdateProductInput): Prom
     purchaseDate: input.purchaseDate ?? null,
     warrantyUntil: input.warrantyUntil ?? null,
     memo: input.memo ?? null,
-    updatedAt: new Date(),
+    updatedAt: deps.clock.now(),
   };
   await deps.productRepository.update(updated);
   return updated;

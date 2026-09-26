@@ -23,6 +23,12 @@
 - **Knip** (`vp run knip`) — 未使用のファイル・依存関係・エクスポートを検出します。依存関係の整理やエントリーポイントのリファクタリング時に使用してください（設定は `knip.config.ts`）。
 - **react-doctor** (`vp run doctor`) — React に特化したヘルスチェックを実行します。スクリプトは `--no-lint` で動作するため、通常の Lint は `vp lint` で行ってください。
 
+## コード構成とテスト
+
+- レイヤーと依存の向き: `docs/adr/0007-layered-structure-and-testing-policy.md`。`domain` は外側の層を import しない。`application` は `infrastructure` を import しない。
+- 業務ルールは `src/domain` の純粋関数に置き、ユースケースは取得・ドメイン関数・保存だけにする。現在時刻は `deps.clock.now()` から取る。
+- テストの書き方: `docs/testing.md`。新しいルールやユースケースはテストを先に書く。ユースケースのテストには `src/application/testing/fake-deps.ts` を使う。
+
 ## Mantine UI
 
 このプロジェクトは Mantine v9 を使用しています。

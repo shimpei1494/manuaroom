@@ -1,5 +1,6 @@
 import type { AiSuggestion } from "../../domain/ai-suggestion/ai-suggestion";
-import type { Deps } from "../../infrastructure/deps";
+import { NotFoundError } from "../../domain/errors";
+import type { Deps } from "../deps";
 
 /**
  * Manual を AI で解析し、メンテナンス候補を ai_suggestions に保存する。
@@ -10,11 +11,17 @@ import type { Deps } from "../../infrastructure/deps";
  *   承認済み Maintenance Task は影響を受けない (既に独立したエンティティ)
  * - ローカル MVP では同期実行: ユーザーがタブを閉じてもサーバーは完走、再訪時に結果が見える
  */
-export async function analyzeManual(deps: Deps, manualId: string): Promise<AiSuggestion[]> {
+export async function analyzeManual(
+  deps: Pick<
+    Deps,
+    "auth" | "clock" | "manualRepository" | "storage" | "aiService" | "aiSuggestionRepository"
+  >,
+  manualId: string,
+): Promise<AiSuggestion[]> {
   const userId = await deps.auth.requireUserId();
   const manual = await deps.manualRepository.findById({ userId, manualId });
   if (!manual) {
-    throw new Error(`Manual not found: ${manualId}`);
+    throw new NotFoundError("Manual", manualId);
   }
 
   await deps.manualRepository.updateAiStatus({ userId, manualId, aiStatus: "analyzing" });
@@ -31,7 +38,7 @@ export async function analyzeManual(deps: Deps, manualId: string): Promise<AiSug
       fileName: manual.fileName,
     });
 
-    const now = new Date();
+    const now = deps.clock.now();
     const suggestions: AiSuggestion[] = payloads.map((payload) => ({
       id: crypto.randomUUID(),
       userId,

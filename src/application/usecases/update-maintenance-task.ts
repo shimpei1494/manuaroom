@@ -1,6 +1,7 @@
+import { NotFoundError } from "../../domain/errors";
 import { calculateNextDueDate } from "../../domain/maintenance/calculate-next-due-date";
 import type { IntervalUnit, MaintenanceTask } from "../../domain/maintenance/maintenance-task";
-import type { Deps } from "../../infrastructure/deps";
+import type { Deps } from "../deps";
 
 export type UpdateMaintenanceTaskInput = {
   taskId: string;
@@ -17,13 +18,13 @@ export type UpdateMaintenanceTaskInput = {
 };
 
 export async function updateMaintenanceTask(
-  deps: Deps,
+  deps: Pick<Deps, "auth" | "clock" | "maintenanceTaskRepository">,
   input: UpdateMaintenanceTaskInput,
 ): Promise<MaintenanceTask> {
   const userId = await deps.auth.requireUserId();
   const existing = await deps.maintenanceTaskRepository.findById({ userId, taskId: input.taskId });
   if (!existing) {
-    throw new Error(`Maintenance task not found: ${input.taskId}`);
+    throw new NotFoundError("Maintenance task", input.taskId);
   }
 
   const intervalChanged =
@@ -33,7 +34,7 @@ export async function updateMaintenanceTask(
   if (input.nextDueDate !== undefined) {
     nextDueDate = input.nextDueDate;
   } else if (intervalChanged && input.intervalValue !== null && input.intervalUnit !== null) {
-    const base = existing.lastDoneAt ?? new Date();
+    const base = existing.lastDoneAt ?? deps.clock.now();
     nextDueDate = calculateNextDueDate(base, input.intervalValue, input.intervalUnit);
   } else if (intervalChanged) {
     nextDueDate = null;
@@ -49,7 +50,7 @@ export async function updateMaintenanceTask(
     memo: input.memo,
     url: input.url,
     nextDueDate,
-    updatedAt: new Date(),
+    updatedAt: deps.clock.now(),
   };
 
   await deps.maintenanceTaskRepository.update(updated);

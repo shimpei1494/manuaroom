@@ -1,4 +1,5 @@
-import type { Deps } from "../../infrastructure/deps";
+import { NotFoundError } from "../../domain/errors";
+import type { Deps } from "../deps";
 
 export type ManualFileResponse = {
   body: ReadableStream;
@@ -6,11 +7,14 @@ export type ManualFileResponse = {
   fileName: string;
 };
 
-export async function getManualFile(deps: Deps, manualId: string): Promise<ManualFileResponse> {
+export async function getManualFile(
+  deps: Pick<Deps, "auth" | "manualRepository" | "storage">,
+  manualId: string,
+): Promise<ManualFileResponse> {
   const userId = await deps.auth.requireUserId();
   const manual = await deps.manualRepository.findById({ userId, manualId });
   if (!manual) {
-    throw new Error(`Manual not found: ${manualId}`);
+    throw new NotFoundError("Manual", manualId);
   }
   const file = await deps.storage.get(manual.fileKey);
   if (!file) {

@@ -1,7 +1,8 @@
-import { calculateNextDueDate } from "../../domain/maintenance/calculate-next-due-date";
+import { NotFoundError } from "../../domain/errors";
+import { completeMaintenanceTask } from "../../domain/maintenance/complete-maintenance-task";
 import type { MaintenanceLog } from "../../domain/maintenance/maintenance-log";
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
-import type { Deps } from "../../infrastructure/deps";
+import type { Deps } from "../deps";
 
 export type MarkMaintenanceDoneInput = {
   taskId: string;
@@ -17,20 +18,20 @@ export type MarkMaintenanceDoneResult = {
 
 /**
  * メンテナンスタスクを「完了済み」としてマークし、次回予定日を再計算する。
- * 完了日基準で計算する (ADR-0001)。interval が定義されていない場合は次回予定日は null。
+ * 再計算のルールは completeMaintenanceTask (ADR-0001)。
  */
 export async function markMaintenanceDone(
-  deps: Deps,
+  deps: Pick<Deps, "auth" | "clock" | "maintenanceTaskRepository" | "maintenanceLogRepository">,
   input: MarkMaintenanceDoneInput,
 ): Promise<MarkMaintenanceDoneResult> {
   const userId = await deps.auth.requireUserId();
   const task = await deps.maintenanceTaskRepository.findById({ userId, taskId: input.taskId });
   if (!task) {
-    throw new Error(`Maintenance task not found: ${input.taskId}`);
+    throw new NotFoundError("Maintenance task", input.taskId);
   }
 
-  const doneAt = input.doneAt ?? new Date();
-  const now = new Date();
+  const now = deps.clock.now();
+  const doneAt = input.doneAt ?? now;
 
   const log: MaintenanceLog = {
     id: crypto.randomUUID(),
@@ -41,17 +42,7 @@ export async function markMaintenanceDone(
     createdAt: now,
   };
 
-  const nextDueDate =
-    task.intervalValue !== null && task.intervalUnit !== null
-      ? calculateNextDueDate(doneAt, task.intervalValue, task.intervalUnit)
-      : null;
-
-  const updatedTask: MaintenanceTask = {
-    ...task,
-    lastDoneAt: doneAt,
-    nextDueDate,
-    updatedAt: now,
-  };
+  const updatedTask = completeMaintenanceTask(task, doneAt, now);
 
   await deps.maintenanceLogRepository.create(log);
   await deps.maintenanceTaskRepository.update(updatedTask);
