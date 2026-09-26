@@ -19,6 +19,8 @@
 
 ## セットアップ
 
+このアプリ（Manuaroom）をローカルで動かす手順と構成は [docs/local-development.md](docs/local-development.md) を参照。以下はテンプレート共通の手順。
+
 \`\`\`bash
 git clone <このリポジトリのURL>
 cd tanstack-start-start-mantine
