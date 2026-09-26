@@ -1,6 +1,8 @@
 import type { Deps } from "../application/deps";
 import { createOpenAiService } from "./ai/openai-ai-service";
+import { readAccessConfig } from "./auth/access-config";
 import { localAuth } from "./auth/local-auth";
+import { createSharedUserAuth } from "./auth/shared-user-auth";
 import { systemClock } from "./clock/system-clock";
 import { createDb } from "./db/client";
 import { createAiSuggestionRepository } from "./db/repositories/ai-suggestion-repository";
@@ -14,7 +16,8 @@ import { createR2FileStorage } from "./storage/r2-file-storage";
 function createDeps(env: RuntimeEnv): Deps {
   const db = createDb(env.DB);
   return {
-    auth: localAuth,
+    // vp dev ではログインなしの固定ユーザー。ビルドした Worker では必ず Access 側の設定を使う
+    auth: import.meta.env.DEV ? localAuth : createSharedUserAuth(readAccessConfig(env).appUserId),
     clock: systemClock,
     storage: createR2FileStorage(env.BUCKET),
     productRepository: createProductRepository(db),

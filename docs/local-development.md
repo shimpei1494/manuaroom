@@ -1,6 +1,6 @@
 # ローカル開発ガイド
 
-手元でアプリを動かすための手順と構成の説明。ローカルでも本番（Cloudflare Workers）と同じ仕組みで動く。本番への移行手順は [plan/cloudflare-migration.md](plan/cloudflare-migration.md)、方針は [ADR 0005](adr/0005-cloudflare-only-stack-with-access.md) を参照。
+手元でアプリを動かすための手順と構成の説明。ローカルでも本番（Cloudflare Workers）と同じ仕組みで動く。本番環境の用意とデプロイは [deployment.md](deployment.md)、方針は [ADR 0005](adr/0005-cloudflare-only-stack-with-access.md) を参照。
 
 ## 必要なもの
 
@@ -24,12 +24,12 @@ vp dev                           # http://localhost:5173
 
 ## ローカルの構成
 
-| 役割         | ローカルでの実体                                 | 設定                                        | 実装                                            |
-| ------------ | ------------------------------------------------ | ------------------------------------------- | ----------------------------------------------- |
-| DB           | ローカル D1（`.wrangler/state/v3/d1/`）+ Drizzle | `wrangler.jsonc` の `DB` バインディング     | `src/infrastructure/db/`                        |
-| PDF の保存先 | ローカル R2（`.wrangler/state/v3/r2/`）          | `wrangler.jsonc` の `BUCKET` バインディング | `src/infrastructure/storage/r2-file-storage.ts` |
-| ユーザー     | 固定の `local-user-1`（ログインなし）            | なし                                        | `src/infrastructure/auth/local-auth.ts`         |
-| AI 解析      | OpenAI API（`gpt-4o-mini`）に PDF をそのまま送る | `.dev.vars` の `OPENAI_API_KEY`             | `src/infrastructure/ai/openai-ai-service.ts`    |
+| 役割         | ローカルでの実体                                             | 設定                                        | 実装                                            |
+| ------------ | ------------------------------------------------------------ | ------------------------------------------- | ----------------------------------------------- |
+| DB           | ローカル D1（`.wrangler/state/v3/d1/`）+ Drizzle             | `wrangler.jsonc` の `DB` バインディング     | `src/infrastructure/db/`                        |
+| PDF の保存先 | ローカル R2（`.wrangler/state/v3/r2/`）                      | `wrangler.jsonc` の `BUCKET` バインディング | `src/infrastructure/storage/r2-file-storage.ts` |
+| ユーザー     | 固定の `local-user-1`（ログインなし。Access の検証もしない） | なし                                        | `src/infrastructure/auth/local-auth.ts`         |
+| AI 解析      | OpenAI API（`gpt-4o-mini`）に PDF をそのまま送る             | `.dev.vars` の `OPENAI_API_KEY`             | `src/infrastructure/ai/openai-ai-service.ts`    |
 
 これらは `src/infrastructure/deps.ts` で組み立てられ、画面やユースケースからは ports（`src/application/ports/`）経由でしか使われない。バインディングと変数の型は `worker-configuration.d.ts`（`vp run cf-typegen` で生成）にある。`wrangler.jsonc` や `.dev.vars` の項目を変えたら再生成する。
 

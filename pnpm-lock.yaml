@@ -42,6 +42,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@libsql/client@0.17.3)
+      jose:
+        specifier: ^6.2.12
+        version: 6.2.12
       openai:
         specifier: ^6.39.0
         version: 6.39.0(ws@8.21.0)(zod@4.4.3)
@@ -3068,6 +3071,9 @@ packages:
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
     hasBin: true
+
+  jose@6.2.12:
+    resolution: {integrity: sha512-9NiFmJEex0sy2Dk58j2UGBSHgUs2ypF9eZSu4L6vjOX3Dp96Sw1F3uL+H+D1sx02jZZdzUT0HgvCy59CuvXcWw==}
 
   js-base64@3.7.8:
     resolution: {integrity: sha512-hNngCeKxIUQiEUN3GPJOkz4wF/YvdUdbNL9hsBcMQTkKzboD7T/q3OYOuuPZLUE6dBxSGpwhk5mwuDud7JVAow==}
@@ -6214,6 +6220,8 @@ snapshots:
     optional: true
 
   jiti@2.7.0: {}
+
+  jose@6.2.12: {}
 
   js-base64@3.7.8:
     optional: true

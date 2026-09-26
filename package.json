@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vp build",
-    "cf-typegen": "wrangler types",
+    "cf-typegen": "wrangler types --strict-vars=false",
     "check": "vp check",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply manuaroom --local",
@@ -29,6 +29,7 @@
     "@tanstack/react-start": "^1.167.65",
     "dayjs": "^1.11.21",
     "drizzle-orm": "^0.45.2",
+    "jose": "^6.2.12",
     "openai": "^6.39.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
