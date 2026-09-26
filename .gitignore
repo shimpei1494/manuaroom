@@ -24,3 +24,8 @@ dist
 
 # playwrite
 .playwright-mcp/
+
+# local data (DB + uploaded PDFs)
+.data/
+*.db
+*.db-journal

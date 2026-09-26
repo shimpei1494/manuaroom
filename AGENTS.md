@@ -31,7 +31,6 @@
 - ドキュメント: https://mantine.dev/llms.txt (コンパクト版)
 - フル版: https://mantine.dev/llms-full.txt
 
-
 ## Agent skills
 
 ### Issue tracker
