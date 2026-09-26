@@ -1,12 +1,12 @@
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
-import type { Deps } from "../../infrastructure/deps";
+import type { Deps } from "../deps";
 
 export type ListMaintenanceTasksInput = {
   productId?: string;
 };
 
 export async function listMaintenanceTasks(
-  deps: Deps,
+  deps: Pick<Deps, "auth" | "maintenanceTaskRepository">,
   input: ListMaintenanceTasksInput = {},
 ): Promise<MaintenanceTask[]> {
   const userId = await deps.auth.requireUserId();

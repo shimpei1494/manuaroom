@@ -13,15 +13,15 @@ routes/api    ──┘         │                  ^
                           └─> infrastructure ┘（ports を実装する）
 ```
 
-| 層 | 置くもの | import してよいもの |
-|---|---|---|
-| `domain/` | 型、業務ルールの純粋関数、ドメインエラー | 外部の純粋ライブラリ（dayjs など）だけ |
-| `application/ports/` | リポジトリ・ストレージ・AI・認証・時計のインターフェース | `domain` |
-| `application/usecases/` | 1 ファイル 1 ユースケース | `domain`、`application` |
-| `application/deps.ts` | ユースケースが受け取る依存の型 `Deps` | `application/ports` |
-| `infrastructure/` | ports の実装、`deps.ts`（組み立て） | `domain`、`application` |
-| `server-functions/`、`routes/api/` | 入力検証（zod）→ ユースケース呼び出し | `application`、`domain`、`infrastructure/deps` |
-| `routes/`（画面） | ページと部品 | `server-functions`、`domain` の型 |
+| 層                                 | 置くもの                                                 | import してよいもの                            |
+| ---------------------------------- | -------------------------------------------------------- | ---------------------------------------------- |
+| `domain/`                          | 型、業務ルールの純粋関数、ドメインエラー                 | 外部の純粋ライブラリ（dayjs など）だけ         |
+| `application/ports/`               | リポジトリ・ストレージ・AI・認証・時計のインターフェース | `domain`                                       |
+| `application/usecases/`            | 1 ファイル 1 ユースケース                                | `domain`、`application`                        |
+| `application/deps.ts`              | ユースケースが受け取る依存の型 `Deps`                    | `application/ports`                            |
+| `infrastructure/`                  | ports の実装、`deps.ts`（組み立て）                      | `domain`、`application`                        |
+| `server-functions/`、`routes/api/` | 入力検証（zod）→ ユースケース呼び出し                    | `application`、`domain`、`infrastructure/deps` |
+| `routes/`（画面）                  | ページと部品                                             | `server-functions`、`domain` の型              |
 
 `domain` と `application` の禁止方向は lint（`no-restricted-imports`）で機械的に止める。
 

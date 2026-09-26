@@ -41,6 +41,45 @@ export default defineConfig({
           "no-default-export": "off",
         },
       },
+      // レイヤーの依存は内向きに揃える (ADR-0007)
+      {
+        files: ["src/domain/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                {
+                  group: [
+                    "**/application/**",
+                    "**/infrastructure/**",
+                    "**/server-functions/**",
+                    "**/routes/**",
+                  ],
+                  message: "domain は外側の層に依存しない (ADR-0007)",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/application/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                {
+                  group: ["**/infrastructure/**", "**/server-functions/**", "**/routes/**"],
+                  message:
+                    "application は infrastructure や入口層に依存しない。必要なものは ports に定義する (ADR-0007)",
+                },
+              ],
+            },
+          ],
+        },
+      },
     ],
     plugins: ["react", "react-perf", "import", "jsx-a11y", "promise"],
     rules: {

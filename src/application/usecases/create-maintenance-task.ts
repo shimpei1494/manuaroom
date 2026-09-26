@@ -1,6 +1,7 @@
+import { NotFoundError } from "../../domain/errors";
 import { calculateNextDueDate } from "../../domain/maintenance/calculate-next-due-date";
 import type { IntervalUnit, MaintenanceTask } from "../../domain/maintenance/maintenance-task";
-import type { Deps } from "../../infrastructure/deps";
+import type { Deps } from "../deps";
 
 export type CreateMaintenanceTaskInput = {
   productId: string;
@@ -14,17 +15,17 @@ export type CreateMaintenanceTaskInput = {
 };
 
 export async function createMaintenanceTask(
-  deps: Deps,
+  deps: Pick<Deps, "auth" | "clock" | "productRepository" | "maintenanceTaskRepository">,
   input: CreateMaintenanceTaskInput,
 ): Promise<MaintenanceTask> {
   const userId = await deps.auth.requireUserId();
 
   const product = await deps.productRepository.findById({ userId, productId: input.productId });
   if (!product) {
-    throw new Error(`Product not found: ${input.productId}`);
+    throw new NotFoundError("Product", input.productId);
   }
 
-  const now = new Date();
+  const now = deps.clock.now();
   const intervalValue = input.intervalValue ?? null;
   const intervalUnit = input.intervalUnit ?? null;
 

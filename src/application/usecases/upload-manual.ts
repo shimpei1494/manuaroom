@@ -1,5 +1,6 @@
+import { NotFoundError } from "../../domain/errors";
 import type { Manual } from "../../domain/manual/manual";
-import type { Deps } from "../../infrastructure/deps";
+import type { Deps } from "../deps";
 
 export const MAX_MANUAL_FILE_SIZE_BYTES = 20 * 1024 * 1024; // Q11-1: 20MB
 export const ALLOWED_MANUAL_MIME_TYPES = ["application/pdf"] as const; // Q11-2
@@ -12,7 +13,10 @@ export type UploadManualInput = {
   mimeType: string;
 };
 
-export async function uploadManual(deps: Deps, input: UploadManualInput): Promise<Manual> {
+export async function uploadManual(
+  deps: Pick<Deps, "auth" | "clock" | "productRepository" | "storage" | "manualRepository">,
+  input: UploadManualInput,
+): Promise<Manual> {
   if (input.fileSize > MAX_MANUAL_FILE_SIZE_BYTES) {
     throw new Error(
       `File size ${input.fileSize.toString()} exceeds ${MAX_MANUAL_FILE_SIZE_BYTES.toString()} byte limit`,
@@ -30,7 +34,7 @@ export async function uploadManual(deps: Deps, input: UploadManualInput): Promis
 
   const product = await deps.productRepository.findById({ userId, productId: input.productId });
   if (!product) {
-    throw new Error(`Product not found: ${input.productId}`);
+    throw new NotFoundError("Product", input.productId);
   }
 
   const manualId = crypto.randomUUID();
@@ -52,7 +56,7 @@ export async function uploadManual(deps: Deps, input: UploadManualInput): Promis
     mimeType: input.mimeType,
     pageCount: null,
     aiStatus: "not_analyzed",
-    createdAt: new Date(),
+    createdAt: deps.clock.now(),
   };
 
   await deps.manualRepository.create(manual);
