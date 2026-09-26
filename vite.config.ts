@@ -1,3 +1,4 @@
+import { cloudflare } from "@cloudflare/vite-plugin";
 import babel from "@rolldown/plugin-babel";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
@@ -11,7 +12,7 @@ const reactDoctorRules = {
 
 export default defineConfig({
   fmt: {
-    ignorePatterns: ["**/routeTree.gen.ts"],
+    ignorePatterns: ["**/routeTree.gen.ts", "worker-configuration.d.ts"],
     sortImports: {
       partitionByComment: true,
     },
@@ -27,7 +28,7 @@ export default defineConfig({
       browser: true,
       node: true,
     },
-    ignorePatterns: ["**/routeTree.gen.ts"],
+    ignorePatterns: ["**/routeTree.gen.ts", "worker-configuration.d.ts"],
     jsPlugins: [{ name: "react-doctor", specifier: "react-doctor/oxlint-plugin" }],
     options: {
       denyWarnings: true,
@@ -95,6 +96,9 @@ export default defineConfig({
     "*.{js,jsx,ts,tsx,json,css}": "vp check --fix",
   },
   plugins: [
+    // dev / build ではサーバー側を workerd (Miniflare) で動かし、ローカルの D1・R2 を使う。
+    // テストは Node 上で動かすので外す。
+    ...(process.env.VITEST ? [] : [cloudflare({ viteEnvironment: { name: "ssr" } })]),
     tanstackStart(),
     // react's vite plugin must come after start's vite plugin
     react(),

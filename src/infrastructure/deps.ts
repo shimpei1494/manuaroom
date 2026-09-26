@@ -2,25 +2,21 @@ import type { Deps } from "../application/deps";
 import { createOpenAiService } from "./ai/openai-ai-service";
 import { localAuth } from "./auth/local-auth";
 import { systemClock } from "./clock/system-clock";
-import { getDb } from "./db/client";
+import { createDb } from "./db/client";
 import { createAiSuggestionRepository } from "./db/repositories/ai-suggestion-repository";
 import { createMaintenanceLogRepository } from "./db/repositories/maintenance-log-repository";
 import { createMaintenanceTaskRepository } from "./db/repositories/maintenance-task-repository";
 import { createManualRepository } from "./db/repositories/manual-repository";
 import { createProductRepository } from "./db/repositories/product-repository";
-import { getRuntimeEnv } from "./env/runtime-env";
-import { createLocalFileStorage } from "./storage/local-file-storage";
+import { getRuntimeEnv, type RuntimeEnv } from "./env/runtime-env";
+import { createR2FileStorage } from "./storage/r2-file-storage";
 
-let cached: Deps | null = null;
-
-export function getDeps(): Deps {
-  if (cached) return cached;
-  const env = getRuntimeEnv();
-  const db = getDb();
-  cached = {
+function createDeps(env: RuntimeEnv): Deps {
+  const db = createDb(env.DB);
+  return {
     auth: localAuth,
     clock: systemClock,
-    storage: createLocalFileStorage(env.UPLOAD_DIR),
+    storage: createR2FileStorage(env.BUCKET),
     productRepository: createProductRepository(db),
     manualRepository: createManualRepository(db),
     maintenanceTaskRepository: createMaintenanceTaskRepository(db),
@@ -28,5 +24,12 @@ export function getDeps(): Deps {
     aiSuggestionRepository: createAiSuggestionRepository(db),
     aiService: createOpenAiService(env),
   };
+}
+
+let cached: Deps | null = null;
+
+/** バインディングは Worker の生存中は変わらないので、組み立てた依存を使い回す。 */
+export function getDeps(): Deps {
+  cached ??= createDeps(getRuntimeEnv());
   return cached;
 }

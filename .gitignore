@@ -25,7 +25,11 @@ dist
 # playwrite
 .playwright-mcp/
 
-# local data (DB + uploaded PDFs)
+# 旧ローカル MVP のデータ（SQLite + アップロード PDF）
 .data/
 *.db
 *.db-journal
+
+# Cloudflare (wrangler / Miniflare のローカル D1・R2 と秘密情報)
+.wrangler/
+.dev.vars

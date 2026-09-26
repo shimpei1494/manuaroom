@@ -36,14 +36,15 @@ function fromRow(row: Row): AiSuggestion {
 export function createAiSuggestionRepository(db: Db): AiSuggestionRepositoryPort {
   return {
     async replaceByManual({ userId, manualId, suggestions }) {
-      await db.transaction(async (tx) => {
-        await tx
-          .delete(aiSuggestions)
-          .where(and(eq(aiSuggestions.userId, userId), eq(aiSuggestions.manualId, manualId)));
-        if (suggestions.length > 0) {
-          await tx.insert(aiSuggestions).values(suggestions.map(toRow));
-        }
-      });
+      // D1 は対話的なトランザクションを持たないため、batch で 1 トランザクションにまとめる
+      const deleteExisting = db
+        .delete(aiSuggestions)
+        .where(and(eq(aiSuggestions.userId, userId), eq(aiSuggestions.manualId, manualId)));
+      if (suggestions.length === 0) {
+        await deleteExisting;
+        return;
+      }
+      await db.batch([deleteExisting, db.insert(aiSuggestions).values(suggestions.map(toRow))]);
     },
     async findById({ userId, suggestionId }) {
       const rows = await db

@@ -1,0 +1,2 @@
+# OpenAI（「AIで解析」を試す場合のみ。本番は wrangler secret put OPENAI_API_KEY）
+OPENAI_API_KEY=

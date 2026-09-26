@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "manuaroom",
+  // TanStack Start のサーバーエントリをそのまま Worker として使う
+  "main": "@tanstack/react-start/server-entry",
+  "compatibility_date": "2026-09-01",
+  // TanStack Start が AsyncLocalStorage などの Node API を使い、
+  // OpenAI SDK と PDF の base64 化で Buffer を使うため有効にする
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "manuaroom",
+      // `wrangler d1 create manuaroom` の出力に置き換える（ローカル開発はこのままで動く）
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "drizzle",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "manuaroom-manuals",
+    },
+  ],
+}

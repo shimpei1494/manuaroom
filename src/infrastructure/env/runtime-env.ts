@@ -1,35 +1,13 @@
-import { z } from "zod";
+import { env } from "cloudflare:workers";
 
-const RuntimeEnvSchema = z.object({
-  DATABASE_URL: z.string().min(1),
-  DATABASE_AUTH_TOKEN: z
-    .string()
-    .optional()
-    .transform((v) => (v === "" ? undefined : v)),
-  STORAGE_DRIVER: z.enum(["local", "r2"]),
-  UPLOAD_DIR: z.string().min(1),
-  OPENAI_API_KEY: z
-    .string()
-    .optional()
-    .transform((v) => (v === "" ? undefined : v)),
-});
-
-export type RuntimeEnv = z.infer<typeof RuntimeEnvSchema>;
-
-let cached: RuntimeEnv | null = null;
+/**
+ * Worker のバインディングと変数 (wrangler.jsonc / .dev.vars / wrangler secret)。
+ * 型は `vp run cf-typegen` (wrangler types) で worker-configuration.d.ts に生成される。
+ */
+export type RuntimeEnv = Env;
 
 export function getRuntimeEnv(): RuntimeEnv {
-  if (cached) return cached;
-  const parsed = RuntimeEnvSchema.safeParse(process.env);
-  if (!parsed.success) {
-    throw new Error(
-      `Invalid runtime environment: ${parsed.error.issues
-        .map((i) => `${i.path.join(".")} ${i.message}`)
-        .join("; ")}`,
-    );
-  }
-  cached = parsed.data;
-  return cached;
+  return env;
 }
 
 export function requireOpenAiApiKey(env: RuntimeEnv): string {
