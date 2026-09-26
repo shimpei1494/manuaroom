@@ -10,11 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      # Vite+ と Node.js をセットアップし、依存関係のキャッシュと vp install まで行う
+      - uses: voidzero-dev/setup-vp@v1.21.1
         with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec vp check
-      - run: pnpm exec vp test
+          node-version: "22"
+          cache: true
+      - run: vp check
+      - run: vp test

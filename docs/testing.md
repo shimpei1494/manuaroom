@@ -10,7 +10,7 @@ vp test src/domain   # パスで絞り込み
 vp check         # フォーマット・lint・型チェック
 ```
 
-PR では GitHub Actions が `vp check` と `vp test` を実行する。両方通ってからマージする。
+PR では GitHub Actions（`voidzero-dev/setup-vp`）が `vp check` と `vp test` を実行する。両方通ってからマージする。
 
 ## 層ごとの方針
 
