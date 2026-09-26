@@ -7,6 +7,15 @@
   // TanStack Start が AsyncLocalStorage などの Node API を使い、
   // OpenAI SDK と PDF の base64 化で Buffer を使うため有効にする
   "compatibility_flags": ["nodejs_compat"],
+  // Cloudflare Access (docs/deployment.md)。vp dev では使わない
+  "vars": {
+    // Zero Trust のチームドメイン (例: "family.cloudflareaccess.com")
+    "ACCESS_TEAM_DOMAIN": "",
+    // Access アプリケーションの AUD タグ
+    "ACCESS_AUD": "",
+    // Access を通過した家族全員で共有するユーザー ID (ADR 0005)
+    "APP_USER_ID": "family",
+  },
   "observability": {
     "enabled": true,
   },
