@@ -43,7 +43,7 @@ _Avoid_: 確定、保留
 ### ユーザー
 
 **User（ユーザー）**:
-アプリの利用者。MVP では `local-user-1` 固定。すべての主要エンティティに `user_id` が紐づく。将来 Better Auth + Google OAuth に置き換える。
+アプリの利用者。MVP では `local-user-1` 固定。すべての主要エンティティに `user_id` が紐づく。本番では Cloudflare Access（Google ログイン）を通過した家族全員が、同じ共有 `user_id` を使う（参照: ADR 0005）。
 _Avoid_: アカウント、オーナー
 
 **Household（世帯）** — _未実装、将来導入予定_:
