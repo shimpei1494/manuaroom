@@ -23,8 +23,7 @@
     {
       "binding": "DB",
       "database_name": "manuaroom",
-      // `wrangler d1 create manuaroom` の出力に置き換える（ローカル開発はこのままで動く）
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "7bbf0da3-5f59-4cde-bb3a-c902b49a2b92",
       "migrations_dir": "drizzle",
     },
   ],

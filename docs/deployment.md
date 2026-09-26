@@ -17,7 +17,8 @@ vp exec wrangler d1 create manuaroom
 vp exec wrangler r2 bucket create manuaroom-manuals
 ```
 
-- `d1 create` が表示する `database_id` を `wrangler.jsonc` の `d1_databases[0].database_id` に書き込んでコミットする（秘密情報ではない）。
+- `d1 create` が表示する `database_id` を `wrangler.jsonc` の `d1_databases[0].database_id` に書き込んでコミットする（秘密情報ではない。作成済みの `manuaroom` の ID は記入済み）。
+- `d1 create` の最後に「wrangler.jsonc に追加するか」と聞かれたら **no** にする。yes にすると別のバインディング名で 2 つ目の設定が追加されてしまう。
 - `database_id` を書き換えると、ローカルの D1 は別の DB として扱われて空になる。ローカルのデータを残したい場合は、書き換える前に控えておく。
 
 テーブルを作る:
