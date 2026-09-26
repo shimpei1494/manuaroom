@@ -1,9 +1,17 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vite-plus/test";
 
-import { makeAiSuggestion, makeManual, makeProduct } from "../../../application/testing/fake-deps";
+import {
+  makeAiSuggestion,
+  makeMaintenanceTask,
+  makeManual,
+  makeProduct,
+} from "../../../application/testing/fake-deps";
+import type { MaintenanceLog } from "../../../domain/maintenance/maintenance-log";
 import { clearTables, startLocalCloudflareEnv } from "../../testing/local-cloudflare-env";
 import { createDb, type Db } from "../client";
 import { createAiSuggestionRepository } from "./ai-suggestion-repository";
+import { createMaintenanceLogRepository } from "./maintenance-log-repository";
+import { createMaintenanceTaskRepository } from "./maintenance-task-repository";
 import { createManualRepository } from "./manual-repository";
 import { createProductRepository } from "./product-repository";
 
@@ -107,5 +115,46 @@ describe("aiSuggestionRepository.replaceByManual", () => {
 
     const list = await repo.listByManual({ userId: OTHER_USER_ID, manualId: manual.id });
     expect(list.map((s) => s.id)).toEqual([others.id]);
+  });
+});
+
+describe("maintenanceLogRepository.listByKind", () => {
+  async function seedTask(userId?: string) {
+    const product = makeProduct(userId ? { userId } : {});
+    const task = makeMaintenanceTask({ userId: product.userId, productId: product.id });
+    await createProductRepository(db).create(product);
+    await createMaintenanceTaskRepository(db).create(task);
+    return task;
+  }
+
+  function makeLog(
+    task: { id: string; userId: string },
+    kind: MaintenanceLog["kind"],
+  ): MaintenanceLog {
+    const at = new Date("2026-07-20T00:00:00Z");
+    return {
+      id: crypto.randomUUID(),
+      userId: task.userId,
+      taskId: task.id,
+      kind,
+      doneAt: at,
+      memo: null,
+      createdAt: at,
+    };
+  }
+
+  test("指定した種類のログだけを、自分のタスクの分だけ返す (ADR 0006)", async () => {
+    const repo = createMaintenanceLogRepository(db);
+    const [mine, others] = await Promise.all([seedTask(), seedTask(OTHER_USER_ID)]);
+    const skipped = makeLog(mine, "skipped");
+    await Promise.all([
+      repo.create(skipped),
+      repo.create(makeLog(mine, "done")),
+      repo.create(makeLog(others, "skipped")),
+    ]);
+
+    const logs = await repo.listByKind({ userId: mine.userId, kind: "skipped" });
+
+    expect(logs).toEqual([skipped]);
   });
 });

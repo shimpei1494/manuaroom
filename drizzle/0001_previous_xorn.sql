@@ -1,0 +1,1 @@
+ALTER TABLE `maintenance_logs` ADD `kind` text DEFAULT 'done' NOT NULL;

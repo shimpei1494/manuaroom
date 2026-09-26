@@ -5,9 +5,11 @@ import { useServerFn } from "@tanstack/react-start";
 import dayjs from "dayjs";
 import { useState } from "react";
 
-import type { MaintenanceTask } from "../domain/maintenance/maintenance-task";
+import type { MaintenanceTaskListItem } from "../application/usecases/list-maintenance-tasks";
 import { INTERVAL_UNIT_VALUES } from "../domain/maintenance/maintenance-task";
 import type { Product } from "../domain/product/product";
+import { LastDoneCell } from "../features/maintenance/LastDoneCell";
+import { SkipButton } from "../features/maintenance/SkipButton";
 import {
   listMaintenanceTasksFn,
   markMaintenanceDoneFn,
@@ -30,11 +32,11 @@ function MaintenancePage() {
   const productMap = new Map(products.map((p) => [p.id, p] as const));
 
   const today = dayjs().startOf("day");
-  const overdue: MaintenanceTask[] = [];
-  const thisWeek: MaintenanceTask[] = [];
-  const nextMonth: MaintenanceTask[] = [];
-  const later: MaintenanceTask[] = [];
-  const noDate: MaintenanceTask[] = [];
+  const overdue: MaintenanceTaskListItem[] = [];
+  const thisWeek: MaintenanceTaskListItem[] = [];
+  const nextMonth: MaintenanceTaskListItem[] = [];
+  const later: MaintenanceTaskListItem[] = [];
+  const noDate: MaintenanceTaskListItem[] = [];
 
   const weekLimit = today.add(7, "day");
   const monthLimit = today.add(30, "day");
@@ -80,7 +82,7 @@ function Section({
 }: {
   title: string;
   color: string;
-  tasks: MaintenanceTask[];
+  tasks: MaintenanceTaskListItem[];
   productMap: Map<string, Product>;
 }) {
   if (tasks.length === 0) return null;
@@ -113,7 +115,7 @@ function Section({
   );
 }
 
-function Row({ task, product }: { task: MaintenanceTask; product: Product | undefined }) {
+function Row({ task, product }: { task: MaintenanceTaskListItem; product: Product | undefined }) {
   const router = useRouter();
   const markDone = useServerFn(markMaintenanceDoneFn);
   const [busy, setBusy] = useState(false);
@@ -142,31 +144,36 @@ function Row({ task, product }: { task: MaintenanceTask; product: Product | unde
       </Table.Td>
       <Table.Td>{formatDate(task.nextDueDate)}</Table.Td>
       <Table.Td>{formatInterval(task.intervalValue, task.intervalUnit)}</Table.Td>
-      <Table.Td>{formatDate(task.lastDoneAt)}</Table.Td>
       <Table.Td>
-        <Button
-          size="xs"
-          variant="light"
-          loading={busy}
-          onClick={async () => {
-            setBusy(true);
-            try {
-              await markDone({ data: { taskId: task.id } });
-              notifications.show({ color: "green", message: "完了を記録しました" });
-              await router.invalidate();
-            } catch (e) {
-              notifications.show({
-                color: "red",
-                title: "完了に失敗しました",
-                message: e instanceof Error ? e.message : String(e),
-              });
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          完了
-        </Button>
+        <LastDoneCell task={task} />
+      </Table.Td>
+      <Table.Td>
+        <Group gap="xs" justify="flex-end" wrap="nowrap">
+          <Button
+            size="xs"
+            variant="light"
+            loading={busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await markDone({ data: { taskId: task.id } });
+                notifications.show({ color: "green", message: "完了を記録しました" });
+                await router.invalidate();
+              } catch (e) {
+                notifications.show({
+                  color: "red",
+                  title: "完了に失敗しました",
+                  message: e instanceof Error ? e.message : String(e),
+                });
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            完了
+          </Button>
+          <SkipButton task={task} />
+        </Group>
       </Table.Td>
     </Table.Tr>
   );

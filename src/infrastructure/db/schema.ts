@@ -4,6 +4,7 @@ import {
   AI_SUGGESTION_STATUS_VALUES,
   AI_SUGGESTION_TYPE_VALUES,
 } from "../../domain/ai-suggestion/ai-suggestion";
+import { MAINTENANCE_LOG_KIND_VALUES } from "../../domain/maintenance/maintenance-log";
 import {
   INTERVAL_UNIT_VALUES,
   MAINTENANCE_TASK_SOURCE_VALUES,
@@ -84,6 +85,8 @@ export const maintenanceLogs = sqliteTable("maintenance_logs", {
   taskId: text("task_id")
     .notNull()
     .references(() => maintenanceTasks.id, { onDelete: "cascade" }),
+  kind: text("kind", { enum: MAINTENANCE_LOG_KIND_VALUES }).notNull().default("done"),
+  // 記録した日 (実施日またはスキップした日)
   doneAt: integer("done_at", { mode: "timestamp_ms" }).notNull(),
   memo: text("memo"),
   createdAt: createdAt(),
