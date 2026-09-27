@@ -65,6 +65,14 @@ manuals/{user_id}/{product_id}/{manual_id}.pdf
 | `vp run cf-typegen`        | `wrangler.jsonc` と `.dev.vars` からバインディングの型を再生成       |
 | `vp run deploy`            | ビルドして本番の Worker にデプロイ                                   |
 
+### 週次通知を試す
+
+`vp dev` を起動したまま、次を開くと Cron と同じ処理が走る。`.dev.vars` の `LINE_CHANNEL_ACCESS_TOKEN` が空なら、送る内容がターミナルに出るだけで LINE には送らない。
+
+```bash
+curl "http://localhost:3000/cdn-cgi/handler/scheduled?cron=0+0+*+*+sat"
+```
+
 ## Cloudflare 構成で便利になること
 
 - **ローカルでも本番と同じ仕組みで動く。** `@cloudflare/vite-plugin` を入れると、`vp dev` の中でローカル版の D1 と R2（Miniflare）が自動で立ち上がる。ローカル専用の SQLite クライアントやファイル保存のコードが不要になり、「ローカルでは動くが本番で動かない」が起きにくくなる。
@@ -73,4 +81,4 @@ manuals/{user_id}/{product_id}/{manual_id}.pdf
 - **本番のデータをダッシュボードで見られる。** D1 のテーブルと R2 に保存された PDF は Cloudflare のダッシュボードから閲覧・ダウンロードできる。
 - **本番の DB に対して手元からコマンドを打てる。** `--remote` を付けると、同じコマンドで本番の D1 を確認・修正できる。
 - **ログインはローカルでは不要のまま。** Cloudflare Access はデプロイ先の入口にだけかかるので、ローカルは今と同じく固定ユーザーで動かす。
-- **将来の通知に使える。** Cron Triggers を使えば、「期限が近いメンテナンスを毎朝チェックする」といった定期処理を追加のサービスなしで書ける（仮仕様の通知機能は後回しの扱い）。
+- **通知を追加のサービスなしで書ける。** Cron Triggers で毎週土曜に LINE へ週次のまとめを送っている（`src/server.ts`）。

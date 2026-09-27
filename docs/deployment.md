@@ -72,6 +72,26 @@ vp run deploy
 - 製品登録、PDF のアップロードと表示、タスク完了まで動く。データは D1、PDF は R2 のダッシュボードで見られる。
 - 20MB 近い PDF で「AIで解析」を試し、メモリや時間の上限に当たらないか確かめる（移行計画の手順 4）。
 
+## 7. LINE の週次通知（任意）
+
+毎週土曜 9:00（日本時間）に、期限切れと 7 日以内に期限が来るタスクを LINE 公式アカウントから家族に送る。知らせるタスクがない週は送らない。
+
+1. [LINE Official Account Manager](https://manager.line.biz/) で LINE ビジネス ID を作り、公式アカウントを作る（未認証アカウントでよい。コミュニケーションプランなら無料で月 200 通まで。1 人に 1 回送ると 1 通なので、家族 4 人で週 1 回なら月 20 通弱）。
+2. 公式アカウントの設定 → Messaging API で「Messaging API を利用する」を押し、プロバイダーを作る（名前は何でもよい）。
+3. [LINE Developers コンソール](https://developers.line.biz/console/) で、そのチャネルの「Messaging API 設定」→ **チャネルアクセストークン（長期）** を発行する。
+4. トークンを Worker のシークレットに登録する。
+
+```bash
+vp exec wrangler secret put LINE_CHANNEL_ACCESS_TOKEN
+```
+
+5. 家族それぞれが、Messaging API 設定の QR コードから公式アカウントを友だち追加する。**友だち全員に送る（ブロードキャスト）ので、家族以外は友だちにしない。**
+6. 自動応答メッセージが不要なら、Official Account Manager の応答設定で「応答メッセージ」をオフにする。
+
+Cron は `wrangler.jsonc` の `triggers.crons`（`0 0 * * sat` = UTC の土曜 0:00）で決まり、`vp run deploy` のときに登録される。曜日や時刻を変えるときはここを書き換えて再デプロイする。Cron は Worker の中から直接呼ばれるので Cloudflare Access の影響は受けない。
+
+トークンが未登録のときは送らずにログへ出すだけなので、LINE の準備より先にデプロイしても問題ない。送信結果は Workers & Pages → `manuaroom` → Logs で確認できる。
+
 ## 家族を追加・削除するとき
 
 ログインを許可・禁止するには、次の 2 箇所を**両方**更新する。片方だけだと、意図せず全員通す/誰も通さない状態になる。

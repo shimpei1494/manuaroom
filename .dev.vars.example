@@ -1,2 +1,6 @@
 # OpenAI（「AIで解析」を試す場合のみ。本番は wrangler secret put OPENAI_API_KEY）
 OPENAI_API_KEY=
+
+# LINE 公式アカウントのチャネルアクセストークン（週 1 回の通知。本番は wrangler secret put LINE_CHANNEL_ACCESS_TOKEN）
+# 空のままなら通知は送らず、vp dev のログに本文を出す
+LINE_CHANNEL_ACCESS_TOKEN=

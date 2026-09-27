@@ -6,6 +6,7 @@ import type { FileStoragePort } from "./ports/file-storage-port";
 import type { MaintenanceLogRepositoryPort } from "./ports/maintenance-log-repository-port";
 import type { MaintenanceTaskRepositoryPort } from "./ports/maintenance-task-repository-port";
 import type { ManualRepositoryPort } from "./ports/manual-repository-port";
+import type { NotifierPort } from "./ports/notifier-port";
 import type { ProductRepositoryPort } from "./ports/product-repository-port";
 
 /**
@@ -22,4 +23,5 @@ export type Deps = {
   maintenanceLogRepository: MaintenanceLogRepositoryPort;
   aiSuggestionRepository: AiSuggestionRepositoryPort;
   aiService: AiServicePort;
+  notifier: NotifierPort;
 };
