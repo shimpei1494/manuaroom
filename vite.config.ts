@@ -37,7 +37,7 @@ export default defineConfig({
     },
     overrides: [
       {
-        files: ["src/router.tsx", "*.config.ts"],
+        files: ["src/router.tsx", "src/server.ts", "*.config.ts"],
         rules: {
           "no-default-export": "off",
         },

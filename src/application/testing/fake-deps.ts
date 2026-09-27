@@ -27,6 +27,8 @@ type FakeDepsOptions = {
 
 export type FakeDeps = Deps & {
   storage: InMemoryFileStorage;
+  /** 送った通知の本文 (送った順) */
+  sentNotifications: string[];
   /** テスト中に時計を進める。 */
   setNow(now: Date): void;
 };
@@ -34,6 +36,7 @@ export type FakeDeps = Deps & {
 export function createFakeDeps(options: FakeDepsOptions = {}): FakeDeps {
   let now = options.now ?? DEFAULT_NOW;
   const userId = options.userId ?? TEST_USER_ID;
+  const sentNotifications: string[] = [];
   return {
     auth: { requireUserId: () => Promise.resolve(userId) },
     clock: { now: () => now },
@@ -48,6 +51,13 @@ export function createFakeDeps(options: FakeDepsOptions = {}): FakeDeps {
     aiSuggestionRepository: createInMemoryAiSuggestionRepository(),
     aiService: {
       analyzeManualForMaintenance: options.analyzeManual ?? (() => Promise.resolve([])),
+    },
+    sentNotifications,
+    notifier: {
+      send(message) {
+        sentNotifications.push(message);
+        return Promise.resolve();
+      },
     },
   };
 }
