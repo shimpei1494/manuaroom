@@ -36,3 +36,7 @@ dist
 
 # TanStack Router のプラグインが作る一時ファイル
 .tanstack/
+
+# Playwright (E2E) の結果
+playwright-report/
+test-results/

@@ -70,23 +70,26 @@ function Section({
         <Badge color={color}>{tasks.length}</Badge>
       </Group>
       <Paper withBorder>
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>タスク</Table.Th>
-              <Table.Th>製品</Table.Th>
-              <Table.Th>次回予定</Table.Th>
-              <Table.Th>周期</Table.Th>
-              <Table.Th>最終実施</Table.Th>
-              <Table.Th />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {tasks.map((task) => (
-              <Row key={task.id} task={task} product={productMap.get(task.productId)} />
-            ))}
-          </Table.Tbody>
-        </Table>
+        {/* スマホでは列を潰さずに横スクロールさせる */}
+        <Table.ScrollContainer minWidth={760}>
+          <Table>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>タスク</Table.Th>
+                <Table.Th>製品</Table.Th>
+                <Table.Th>次回予定</Table.Th>
+                <Table.Th>周期</Table.Th>
+                <Table.Th>最終実施</Table.Th>
+                <Table.Th />
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {tasks.map((task) => (
+                <Row key={task.id} task={task} product={productMap.get(task.productId)} />
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
       </Paper>
     </Stack>
   );
