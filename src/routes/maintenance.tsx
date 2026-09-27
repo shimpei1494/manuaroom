@@ -12,6 +12,8 @@ import { listMaintenanceTasksFn } from "../server-functions/maintenance-tasks";
 import { listProductsFn } from "../server-functions/products";
 
 export const Route = createFileRoute("/maintenance")({
+  // 日付をブラウザのタイムゾーンで描くため (トップページと同じ理由)
+  ssr: "data-only",
   loader: async () => {
     const [tasks, products] = await Promise.all([
       listMaintenanceTasksFn({ data: {} }),
