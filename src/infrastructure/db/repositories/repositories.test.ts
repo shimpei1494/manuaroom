@@ -118,7 +118,7 @@ describe("aiSuggestionRepository.replaceByManual", () => {
   });
 });
 
-describe("maintenanceLogRepository.listByKind", () => {
+describe("maintenanceLogRepository", () => {
   async function seedTask(userId?: string) {
     const product = makeProduct(userId ? { userId } : {});
     const task = makeMaintenanceTask({ userId: product.userId, productId: product.id });
@@ -139,6 +139,7 @@ describe("maintenanceLogRepository.listByKind", () => {
       kind,
       doneAt: at,
       memo: null,
+      previousTaskState: null,
       createdAt: at,
     };
   }
@@ -156,5 +157,33 @@ describe("maintenanceLogRepository.listByKind", () => {
     const logs = await repo.listByKind({ userId: mine.userId, kind: "skipped" });
 
     expect(logs).toEqual([skipped]);
+  });
+
+  test("記録前のタスクの状態を保存して読み戻せる (値が null のものも含む)", async () => {
+    const repo = createMaintenanceLogRepository(db);
+    const task = await seedTask();
+    const log: MaintenanceLog = {
+      ...makeLog(task, "done"),
+      previousTaskState: { nextDueDate: new Date("2026-07-10T00:00:00Z"), lastDoneAt: null },
+    };
+    const legacy = makeLog(task, "skipped");
+    await Promise.all([repo.create(log), repo.create(legacy)]);
+
+    expect(await repo.findById({ userId: task.userId, logId: log.id })).toEqual(log);
+    expect(await repo.findById({ userId: task.userId, logId: legacy.id })).toEqual(legacy);
+  });
+
+  test("自分の記録だけ見つけて消せる", async () => {
+    const repo = createMaintenanceLogRepository(db);
+    const task = await seedTask();
+    const log = makeLog(task, "done");
+    await repo.create(log);
+
+    expect(await repo.findById({ userId: OTHER_USER_ID, logId: log.id })).toBeNull();
+    await repo.delete({ userId: OTHER_USER_ID, logId: log.id });
+    expect(await repo.findById({ userId: task.userId, logId: log.id })).toEqual(log);
+
+    await repo.delete({ userId: task.userId, logId: log.id });
+    expect(await repo.listByTask({ userId: task.userId, taskId: task.id })).toEqual([]);
   });
 });

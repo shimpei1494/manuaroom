@@ -262,17 +262,32 @@ function createInMemoryMaintenanceTaskRepository(): MaintenanceTaskRepositoryPor
 }
 
 function createInMemoryMaintenanceLogRepository(): MaintenanceLogRepositoryPort {
-  const rows: MaintenanceLog[] = [];
+  let rows: MaintenanceLog[] = [];
   return {
     create(log) {
       rows.push(log);
       return Promise.resolve();
     },
+    findById({ userId, logId }) {
+      return Promise.resolve(rows.find((l) => l.userId === userId && l.id === logId) ?? null);
+    },
     listByTask({ userId, taskId }) {
-      return Promise.resolve(rows.filter((l) => l.userId === userId && l.taskId === taskId));
+      return Promise.resolve(
+        rows
+          .filter((l) => l.userId === userId && l.taskId === taskId)
+          .sort(
+            (a, b) =>
+              b.doneAt.getTime() - a.doneAt.getTime() ||
+              b.createdAt.getTime() - a.createdAt.getTime(),
+          ),
+      );
     },
     listByKind({ userId, kind }) {
       return Promise.resolve(rows.filter((l) => l.userId === userId && l.kind === kind));
+    },
+    delete({ userId, logId }) {
+      rows = rows.filter((l) => !(l.userId === userId && l.id === logId));
+      return Promise.resolve();
     },
   };
 }

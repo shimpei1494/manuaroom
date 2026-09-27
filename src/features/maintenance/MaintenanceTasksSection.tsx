@@ -29,6 +29,7 @@ import { formatDate, formatInterval } from "./format";
 import { LastDoneCell } from "./LastDoneCell";
 import { MaintenanceTaskForm } from "./MaintenanceTaskForm";
 import { SkipButton } from "./SkipButton";
+import { TaskHistoryButton } from "./TaskHistoryButton";
 
 export function MaintenanceTasksSection({
   productId,
@@ -187,6 +188,7 @@ function TaskRow({
         <Group gap="xs" justify="flex-end" wrap="nowrap">
           <CompleteButton taskId={task.id} />
           <SkipButton task={task} />
+          <TaskHistoryButton task={task} />
           <ActionIcon variant="default" onClick={onEdit} aria-label="編集">
             ✎
           </ActionIcon>

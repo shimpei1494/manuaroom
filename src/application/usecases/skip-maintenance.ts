@@ -2,6 +2,7 @@ import { NotFoundError } from "../../domain/errors";
 import type { MaintenanceLog } from "../../domain/maintenance/maintenance-log";
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
 import { skipMaintenanceTask } from "../../domain/maintenance/skip-maintenance-task";
+import { captureTaskStateBeforeLog } from "../../domain/maintenance/undo-maintenance-log";
 import type { Deps } from "../deps";
 
 export type SkipMaintenanceInput = {
@@ -37,6 +38,7 @@ export async function skipMaintenance(
     kind: "skipped",
     doneAt: now,
     memo: input.memo ?? null,
+    previousTaskState: captureTaskStateBeforeLog(task),
     createdAt: now,
   };
 

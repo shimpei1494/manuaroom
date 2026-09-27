@@ -4,36 +4,38 @@ import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
-import { markMaintenanceDoneFn } from "../../server-functions/maintenance-tasks";
+import { undoMaintenanceLogFn } from "../../server-functions/maintenance-tasks";
 import { errorMessage } from "../shared/form";
-import { showRecordedNotification } from "./show-recorded-notification";
 
-/** 今日実施したものとして記録し、画面を再読み込みする。 */
-export function CompleteButton({
-  taskId,
+/** 実施・スキップの記録を取り消し、タスクを記録前の状態に戻す。 */
+export function UndoLogButton({
+  logId,
+  onUndone,
   size = "xs",
 }: {
-  taskId: string;
+  logId: string;
+  onUndone?: () => void;
   size?: ButtonProps["size"];
 }) {
   const router = useRouter();
-  const markDone = useServerFn(markMaintenanceDoneFn);
+  const undo = useServerFn(undoMaintenanceLogFn);
   const [busy, setBusy] = useState(false);
   return (
     <Button
       size={size}
-      variant="light"
+      variant="subtle"
       loading={busy}
       onClick={async () => {
         setBusy(true);
         try {
-          const { log } = await markDone({ data: { taskId } });
-          showRecordedNotification("完了を記録しました", log.id);
+          await undo({ data: { logId } });
+          notifications.show({ color: "gray", message: "取り消しました" });
+          onUndone?.();
           await router.invalidate();
         } catch (e) {
           notifications.show({
             color: "red",
-            title: "完了に失敗しました",
+            title: "取り消しに失敗しました",
             message: errorMessage(e),
           });
         } finally {
@@ -41,7 +43,7 @@ export function CompleteButton({
         }
       }}
     >
-      完了
+      元に戻す
     </Button>
   );
 }

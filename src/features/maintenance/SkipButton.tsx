@@ -9,6 +9,7 @@ import { calculateNextDueDate } from "../../domain/maintenance/calculate-next-du
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
 import { skipMaintenanceFn } from "../../server-functions/maintenance-tasks";
 import { errorMessage } from "../shared/form";
+import { showRecordedNotification } from "./show-recorded-notification";
 
 /**
  * その回はやらずに次の周期へ先送りする (ADR 0006)。
@@ -39,8 +40,10 @@ export function SkipButton({
   const submit = async () => {
     setBusy(true);
     try {
-      await skip({ data: { taskId: task.id, memo: memo.trim() === "" ? null : memo.trim() } });
-      notifications.show({ color: "green", message: "スキップしました" });
+      const { log } = await skip({
+        data: { taskId: task.id, memo: memo.trim() === "" ? null : memo.trim() },
+      });
+      showRecordedNotification("スキップしました", log.id);
       close();
       await router.invalidate();
     } catch (e) {
