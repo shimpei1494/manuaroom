@@ -67,6 +67,9 @@ function HomePage() {
         <Anchor component={Link} to="/maintenance">
           すべてのメンテナンス
         </Anchor>
+        <Anchor component={Link} to="/calendar">
+          カレンダー
+        </Anchor>
         <Anchor component={Link} to="/products">
           製品一覧
         </Anchor>

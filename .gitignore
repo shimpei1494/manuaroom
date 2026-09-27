@@ -33,3 +33,6 @@ dist
 # Cloudflare (wrangler / Miniflare のローカル D1・R2 と秘密情報)
 .wrangler/
 .dev.vars
+
+# TanStack Router のプラグインが作る一時ファイル
+.tanstack/

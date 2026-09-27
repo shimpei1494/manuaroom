@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createMaintenanceTask } from "../application/usecases/create-maintenance-task";
 import { deleteMaintenanceTask } from "../application/usecases/delete-maintenance-task";
 import { listMaintenanceLogs } from "../application/usecases/list-maintenance-logs";
+import { listMaintenanceLogsInPeriod } from "../application/usecases/list-maintenance-logs-in-period";
 import { listMaintenanceTasks } from "../application/usecases/list-maintenance-tasks";
 import { markMaintenanceDone } from "../application/usecases/mark-maintenance-done";
 import { skipMaintenance } from "../application/usecases/skip-maintenance";
@@ -57,6 +58,8 @@ const TaskIdSchema = z.object({ taskId: z.string().min(1) });
 
 const LogIdSchema = z.object({ logId: z.string().min(1) });
 
+const PeriodSchema = z.object({ from: z.coerce.date(), to: z.coerce.date() });
+
 export const listMaintenanceTasksFn = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) => ListMaintenanceTasksInputSchema.parse(data))
   .handler(async ({ data }) => {
@@ -103,4 +106,10 @@ export const undoMaintenanceLogFn = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => LogIdSchema.parse(data))
   .handler(async ({ data }) => {
     await undoMaintenanceLog(getDeps(), data);
+  });
+
+export const listMaintenanceLogsInPeriodFn = createServerFn({ method: "GET" })
+  .inputValidator((data: unknown) => PeriodSchema.parse(data))
+  .handler(async ({ data }) => {
+    return listMaintenanceLogsInPeriod(getDeps(), data);
   });
