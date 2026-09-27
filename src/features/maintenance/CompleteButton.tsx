@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
 import { markMaintenanceDoneFn } from "../../server-functions/maintenance-tasks";
+import { errorMessage } from "../shared/form";
 
 /** 今日実施したものとして記録し、画面を再読み込みする。 */
 export function CompleteButton({
@@ -32,7 +33,7 @@ export function CompleteButton({
           notifications.show({
             color: "red",
             title: "完了に失敗しました",
-            message: e instanceof Error ? e.message : String(e),
+            message: errorMessage(e),
           });
         } finally {
           setBusy(false);
