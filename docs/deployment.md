@@ -46,9 +46,12 @@ vp run deploy
 ## 5. Cloudflare Access（Zero Trust）
 
 1. ダッシュボードの Zero Trust を開き、チーム名を決めて Free プランで始める（50 ユーザー未満は無料。支払い方法の登録を求められることがある）。チームドメインは `<チーム名>.cloudflareaccess.com` になる。
-2. Zero Trust の設定（Authentication → Login methods）で **Google** を追加する。画面の案内に従って Google Cloud で OAuth クライアントを作る。
+2. Zero Trust の設定（Authentication → Login methods）で **Google** を追加する。Google Cloud 側で OAuth クライアントを作る（使っているプロジェクトは `home-manuals`）。
+   - Google Auth Platform → **クライアント** → 作成。アプリケーションの種類は「ウェブ アプリケーション」、承認済みのリダイレクト URI は `https://<チーム名>.cloudflareaccess.com/cdn-cgi/access/callback`。JavaScript 生成元は空欄でよい（サーバーサイドの OAuth フローのみ使うため）。
+   - 作成されたクライアント ID とクライアント シークレットを Cloudflare の Login methods 設定に貼り付ける。
+   - このプロジェクトの OAuth 同意画面は「テスト中」のまま運用している。**テストユーザーに登録していない Google アカウントはログイン自体ができない**（Google Auth Platform → **対象** → テストユーザー）。家族を追加するときは、ここへの追加が必要（下の「家族を追加・削除するとき」参照）。
 3. Workers & Pages → `manuaroom` → Settings → Domains & Routes で、`workers.dev` と Preview URLs の Cloudflare Access を有効にする。
-4. 作成された Access アプリケーションのポリシーを編集し、Include → Emails に家族のメールアドレスを入れる。
+4. 作成された Access アプリケーションにポリシーを追加する。**ルールのセレクタは「メール」（個別アドレス指定）にし、ドメイン指定（Email domain / Emails ending in）は使わない**（`gmail.com` などで全許可すると、Google 側のテスト制限が外れた時に誰でも入れてしまう）。アクションは「許可」。家族それぞれの実際の Gmail アドレスを入れる。
 5. Access アプリケーションの画面で **Application Audience (AUD) Tag** をコピーする。
 6. `wrangler.jsonc` の `vars` に書き込んでコミットし、もう一度 `vp run deploy` する。
 
@@ -68,6 +71,13 @@ vp run deploy
 - シークレットウィンドウで家族以外の Google アカウントを使うと、Access の画面で止められる。
 - 製品登録、PDF のアップロードと表示、タスク完了まで動く。データは D1、PDF は R2 のダッシュボードで見られる。
 - 20MB 近い PDF で「AIで解析」を試し、メモリや時間の上限に当たらないか確かめる（移行計画の手順 4）。
+
+## 家族を追加・削除するとき
+
+ログインを許可・禁止するには、次の 2 箇所を**両方**更新する。片方だけだと、意図せず全員通す/誰も通さない状態になる。
+
+1. **Google Cloud（`home-manuals` プロジェクト）**: Google Auth Platform → 対象 → テストユーザーに、その人の Google アカウントを追加・削除する。ここに載っていないアカウントは Google のログイン画面自体で弾かれる。
+2. **Cloudflare Access のポリシー**: `manuaroom` の Access アプリケーションのポリシーで、「メール」セレクタに登録した個別アドレスを追加・削除する。
 
 ## 自動デプロイ（任意）
 
