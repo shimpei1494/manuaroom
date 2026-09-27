@@ -285,6 +285,16 @@ function createInMemoryMaintenanceLogRepository(): MaintenanceLogRepositoryPort 
     listByKind({ userId, kind }) {
       return Promise.resolve(rows.filter((l) => l.userId === userId && l.kind === kind));
     },
+    listByPeriod({ userId, from, to }) {
+      return Promise.resolve(
+        rows.filter(
+          (l) =>
+            l.userId === userId &&
+            l.doneAt.getTime() >= from.getTime() &&
+            l.doneAt.getTime() < to.getTime(),
+        ),
+      );
+    },
     delete({ userId, logId }) {
       rows = rows.filter((l) => !(l.userId === userId && l.id === logId));
       return Promise.resolve();

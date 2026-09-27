@@ -186,4 +186,25 @@ describe("maintenanceLogRepository", () => {
     await repo.delete({ userId: task.userId, logId: log.id });
     expect(await repo.listByTask({ userId: task.userId, taskId: task.id })).toEqual([]);
   });
+
+  test("記録した日が期間内 (from 以上 to 未満) の自分の記録だけ返す", async () => {
+    const repo = createMaintenanceLogRepository(db);
+    const [mine, others] = await Promise.all([seedTask(), seedTask(OTHER_USER_ID)]);
+    const at = (s: string) => ({ doneAt: new Date(s) });
+    const inside = { ...makeLog(mine, "done"), ...at("2026-09-01T00:00:00Z") };
+    await Promise.all([
+      repo.create(inside),
+      repo.create({ ...makeLog(mine, "done"), ...at("2026-08-31T23:59:59Z") }),
+      repo.create({ ...makeLog(mine, "done"), ...at("2026-10-01T00:00:00Z") }),
+      repo.create({ ...makeLog(others, "done"), ...at("2026-09-10T00:00:00Z") }),
+    ]);
+
+    const logs = await repo.listByPeriod({
+      userId: mine.userId,
+      from: new Date("2026-09-01T00:00:00Z"),
+      to: new Date("2026-10-01T00:00:00Z"),
+    });
+
+    expect(logs).toEqual([inside]);
+  });
 });

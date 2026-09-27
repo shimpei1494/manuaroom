@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, lt } from "drizzle-orm";
 
 import type { MaintenanceLogRepositoryPort } from "../../../application/ports/maintenance-log-repository-port";
 import type { MaintenanceLog } from "../../../domain/maintenance/maintenance-log";
@@ -55,6 +55,19 @@ export function createMaintenanceLogRepository(db: Db): MaintenanceLogRepository
         .select()
         .from(maintenanceLogs)
         .where(and(eq(maintenanceLogs.userId, userId), eq(maintenanceLogs.kind, kind)));
+      return rows.map(toDomain);
+    },
+    async listByPeriod({ userId, from, to }) {
+      const rows = await db
+        .select()
+        .from(maintenanceLogs)
+        .where(
+          and(
+            eq(maintenanceLogs.userId, userId),
+            gte(maintenanceLogs.doneAt, from),
+            lt(maintenanceLogs.doneAt, to),
+          ),
+        );
       return rows.map(toDomain);
     },
     async delete({ userId, logId }) {
