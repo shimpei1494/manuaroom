@@ -4,6 +4,7 @@ import { useForm } from "@mantine/form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 
+import { emptyToNull } from "../../features/shared/form";
 import { createProductFn } from "../../server-functions/products";
 
 export const Route = createFileRoute("/products/new")({
@@ -110,9 +111,4 @@ function NewProductPage() {
       </form>
     </Stack>
   );
-}
-
-function emptyToNull(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed.length === 0 ? null : trimmed;
 }

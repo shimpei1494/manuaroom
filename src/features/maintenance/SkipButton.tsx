@@ -8,6 +8,7 @@ import { useState } from "react";
 import { calculateNextDueDate } from "../../domain/maintenance/calculate-next-due-date";
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
 import { skipMaintenanceFn } from "../../server-functions/maintenance-tasks";
+import { errorMessage } from "../shared/form";
 
 /**
  * その回はやらずに次の周期へ先送りする (ADR 0006)。
@@ -46,7 +47,7 @@ export function SkipButton({
       notifications.show({
         color: "red",
         title: "スキップに失敗しました",
-        message: e instanceof Error ? e.message : String(e),
+        message: errorMessage(e),
       });
     } finally {
       setBusy(false);
