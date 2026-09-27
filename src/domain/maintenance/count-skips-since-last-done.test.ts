@@ -11,6 +11,7 @@ function log(kind: MaintenanceLog["kind"], doneAt: string): MaintenanceLog {
     kind,
     doneAt: new Date(doneAt),
     memo: null,
+    previousTaskState: null,
     createdAt: new Date(doneAt),
   };
 }

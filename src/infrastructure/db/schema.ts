@@ -89,6 +89,12 @@ export const maintenanceLogs = sqliteTable("maintenance_logs", {
   // 記録した日 (実施日またはスキップした日)
   doneAt: integer("done_at", { mode: "timestamp_ms" }).notNull(),
   memo: text("memo"),
+  // 記録する直前のタスクの状態 (取り消し用)。取り消しに対応する前の記録は has_previous_task_state = false
+  hasPreviousTaskState: integer("has_previous_task_state", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  previousNextDueDate: integer("previous_next_due_date", { mode: "timestamp_ms" }),
+  previousLastDoneAt: integer("previous_last_done_at", { mode: "timestamp_ms" }),
   createdAt: createdAt(),
 });
 

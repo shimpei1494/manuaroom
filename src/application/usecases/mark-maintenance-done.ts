@@ -2,6 +2,7 @@ import { NotFoundError } from "../../domain/errors";
 import { completeMaintenanceTask } from "../../domain/maintenance/complete-maintenance-task";
 import type { MaintenanceLog } from "../../domain/maintenance/maintenance-log";
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
+import { captureTaskStateBeforeLog } from "../../domain/maintenance/undo-maintenance-log";
 import type { Deps } from "../deps";
 
 export type MarkMaintenanceDoneInput = {
@@ -40,6 +41,7 @@ export async function markMaintenanceDone(
     kind: "done",
     doneAt,
     memo: input.memo ?? null,
+    previousTaskState: captureTaskStateBeforeLog(task),
     createdAt: now,
   };
 
