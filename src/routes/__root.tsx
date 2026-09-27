@@ -93,6 +93,7 @@ function Shell({ children }: { children: ReactNode }) {
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="md">
+        <NavLink component={Link} to="/" label="今やること" />
         <NavLink component={Link} to="/maintenance" label="メンテナンス" />
         <NavLink component={Link} to="/products" label="製品" />
       </AppShell.Navbar>

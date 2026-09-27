@@ -1,4 +1,4 @@
-import { Button, Group, Modal, Stack, Text, Textarea } from "@mantine/core";
+import { Button, type ButtonProps, Group, Modal, Stack, Text, Textarea } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -13,7 +13,13 @@ import { skipMaintenanceFn } from "../../server-functions/maintenance-tasks";
  * その回はやらずに次の周期へ先送りする (ADR 0006)。
  * 押すと確認ダイアログで先に次回予定日を見せる。周期のないタスクには出さない。
  */
-export function SkipButton({ task }: { task: MaintenanceTask }) {
+export function SkipButton({
+  task,
+  size = "xs",
+}: {
+  task: MaintenanceTask;
+  size?: ButtonProps["size"];
+}) {
   const router = useRouter();
   const skip = useServerFn(skipMaintenanceFn);
   const [opened, setOpened] = useState(false);
@@ -50,7 +56,7 @@ export function SkipButton({ task }: { task: MaintenanceTask }) {
   return (
     <>
       <Button
-        size="xs"
+        size={size}
         variant="default"
         onClick={() => {
           setOpened(true);
