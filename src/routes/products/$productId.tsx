@@ -84,6 +84,8 @@ async function loadProductDetail(productId: string) {
 }
 
 export const Route = createFileRoute("/products/$productId")({
+  // 日付をブラウザのタイムゾーンで描くため (トップページと同じ理由)
+  ssr: "data-only",
   loader: ({ params }) => loadProductDetail(params.productId),
   component: ProductDetailPage,
 });
