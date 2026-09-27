@@ -35,6 +35,12 @@ import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task"
 import { INTERVAL_UNIT_VALUES } from "../../domain/maintenance/maintenance-task";
 import type { Manual } from "../../domain/manual/manual";
 import type { Product } from "../../domain/product/product";
+import { CompleteButton } from "../../features/maintenance/CompleteButton";
+import {
+  formatDate,
+  formatInterval,
+  INTERVAL_UNIT_LABELS,
+} from "../../features/maintenance/format";
 import { LastDoneCell } from "../../features/maintenance/LastDoneCell";
 import { SkipButton } from "../../features/maintenance/SkipButton";
 import {
@@ -46,7 +52,6 @@ import {
   createMaintenanceTaskFn,
   deleteMaintenanceTaskFn,
   listMaintenanceTasksFn,
-  markMaintenanceDoneFn,
   updateMaintenanceTaskFn,
 } from "../../server-functions/maintenance-tasks";
 import {
@@ -704,9 +709,7 @@ function TaskRow({
   onEdit: () => void;
 }) {
   const router = useRouter();
-  const markDone = useServerFn(markMaintenanceDoneFn);
   const deleteTask = useServerFn(deleteMaintenanceTaskFn);
-  const [busy, setBusy] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const overdue =
     task.nextDueDate !== null &&
@@ -775,29 +778,7 @@ function TaskRow({
       </Table.Td>
       <Table.Td>
         <Group gap="xs" justify="flex-end" wrap="nowrap">
-          <Button
-            size="xs"
-            variant="light"
-            loading={busy}
-            onClick={async () => {
-              setBusy(true);
-              try {
-                await markDone({ data: { taskId: task.id } });
-                notifications.show({ color: "green", message: "完了を記録しました" });
-                await router.invalidate();
-              } catch (e) {
-                notifications.show({
-                  color: "red",
-                  title: "完了に失敗しました",
-                  message: errMessage(e),
-                });
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            完了
-          </Button>
+          <CompleteButton taskId={task.id} />
           <SkipButton task={task} />
           <ActionIcon variant="default" onClick={onEdit} aria-label="編集">
             ✎
@@ -934,7 +915,7 @@ function MaintenanceTaskForm(props: TaskFormProps) {
           <Select
             label="単位"
             placeholder="単位"
-            data={INTERVAL_UNIT_LABELS}
+            data={INTERVAL_UNIT_OPTIONS}
             clearable
             {...form.getInputProps("intervalUnit")}
           />
@@ -960,26 +941,10 @@ function MaintenanceTaskForm(props: TaskFormProps) {
   );
 }
 
-const INTERVAL_UNIT_LABELS: { value: string; label: string }[] = [
-  { value: "day", label: "日" },
-  { value: "week", label: "週" },
-  { value: "month", label: "月" },
-  { value: "year", label: "年" },
-];
-
-function formatInterval(
-  value: number | null,
-  unit: (typeof INTERVAL_UNIT_VALUES)[number] | null,
-): string {
-  if (value === null || unit === null) return "—";
-  const label = INTERVAL_UNIT_LABELS.find((u) => u.value === unit)?.label ?? unit;
-  return `${value.toString()}${label}ごと`;
-}
-
-function formatDate(value: Date | null): string {
-  if (value === null) return "—";
-  return dayjs(value).format("YYYY/MM/DD");
-}
+const INTERVAL_UNIT_OPTIONS = INTERVAL_UNIT_VALUES.map((value) => ({
+  value,
+  label: INTERVAL_UNIT_LABELS[value],
+}));
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes.toString()} B`;

@@ -1,19 +1,14 @@
-import { Anchor, Badge, Button, Group, Paper, Stack, Table, Text, Title } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
-import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import dayjs from "dayjs";
-import { useState } from "react";
+import { Anchor, Badge, Group, Paper, Stack, Table, Text, Title } from "@mantine/core";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 import type { MaintenanceTaskListItem } from "../application/usecases/list-maintenance-tasks";
-import { INTERVAL_UNIT_VALUES } from "../domain/maintenance/maintenance-task";
+import { classifyByDueDate } from "../domain/maintenance/classify-by-due-date";
 import type { Product } from "../domain/product/product";
+import { CompleteButton } from "../features/maintenance/CompleteButton";
+import { formatDate, formatInterval } from "../features/maintenance/format";
 import { LastDoneCell } from "../features/maintenance/LastDoneCell";
 import { SkipButton } from "../features/maintenance/SkipButton";
-import {
-  listMaintenanceTasksFn,
-  markMaintenanceDoneFn,
-} from "../server-functions/maintenance-tasks";
+import { listMaintenanceTasksFn } from "../server-functions/maintenance-tasks";
 import { listProductsFn } from "../server-functions/products";
 
 export const Route = createFileRoute("/maintenance")({
@@ -31,27 +26,7 @@ function MaintenancePage() {
   const { tasks, products } = Route.useLoaderData();
   const productMap = new Map(products.map((p) => [p.id, p] as const));
 
-  const today = dayjs().startOf("day");
-  const overdue: MaintenanceTaskListItem[] = [];
-  const thisWeek: MaintenanceTaskListItem[] = [];
-  const nextMonth: MaintenanceTaskListItem[] = [];
-  const later: MaintenanceTaskListItem[] = [];
-  const noDate: MaintenanceTaskListItem[] = [];
-
-  const weekLimit = today.add(7, "day");
-  const monthLimit = today.add(30, "day");
-
-  for (const task of tasks) {
-    if (task.nextDueDate === null) {
-      noDate.push(task);
-      continue;
-    }
-    const due = dayjs(task.nextDueDate).startOf("day");
-    if (due.isBefore(today)) overdue.push(task);
-    else if (due.isBefore(weekLimit)) thisWeek.push(task);
-    else if (due.isBefore(monthLimit)) nextMonth.push(task);
-    else later.push(task);
-  }
+  const { overdue, thisWeek, nextMonth, later, noDate } = classifyByDueDate(tasks, new Date());
 
   return (
     <Stack>
@@ -116,9 +91,6 @@ function Section({
 }
 
 function Row({ task, product }: { task: MaintenanceTaskListItem; product: Product | undefined }) {
-  const router = useRouter();
-  const markDone = useServerFn(markMaintenanceDoneFn);
-  const [busy, setBusy] = useState(false);
   return (
     <Table.Tr>
       <Table.Td>
@@ -149,52 +121,10 @@ function Row({ task, product }: { task: MaintenanceTaskListItem; product: Produc
       </Table.Td>
       <Table.Td>
         <Group gap="xs" justify="flex-end" wrap="nowrap">
-          <Button
-            size="xs"
-            variant="light"
-            loading={busy}
-            onClick={async () => {
-              setBusy(true);
-              try {
-                await markDone({ data: { taskId: task.id } });
-                notifications.show({ color: "green", message: "完了を記録しました" });
-                await router.invalidate();
-              } catch (e) {
-                notifications.show({
-                  color: "red",
-                  title: "完了に失敗しました",
-                  message: e instanceof Error ? e.message : String(e),
-                });
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            完了
-          </Button>
+          <CompleteButton taskId={task.id} />
           <SkipButton task={task} />
         </Group>
       </Table.Td>
     </Table.Tr>
   );
-}
-
-const INTERVAL_UNIT_LABELS: Record<(typeof INTERVAL_UNIT_VALUES)[number], string> = {
-  day: "日",
-  week: "週",
-  month: "月",
-  year: "年",
-};
-
-function formatInterval(
-  value: number | null,
-  unit: (typeof INTERVAL_UNIT_VALUES)[number] | null,
-): string {
-  if (value === null || unit === null) return "—";
-  return `${value.toString()}${INTERVAL_UNIT_LABELS[unit]}ごと`;
-}
-
-function formatDate(value: Date | null): string {
-  if (value === null) return "—";
-  return dayjs(value).format("YYYY/MM/DD");
 }
