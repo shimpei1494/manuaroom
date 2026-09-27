@@ -29,11 +29,14 @@ import { useServerFn } from "@tanstack/react-start";
 import dayjs from "dayjs";
 import { useState } from "react";
 
+import type { MaintenanceTaskListItem } from "../../application/usecases/list-maintenance-tasks";
 import type { AiSuggestion } from "../../domain/ai-suggestion/ai-suggestion";
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
 import { INTERVAL_UNIT_VALUES } from "../../domain/maintenance/maintenance-task";
 import type { Manual } from "../../domain/manual/manual";
 import type { Product } from "../../domain/product/product";
+import { LastDoneCell } from "../../features/maintenance/LastDoneCell";
+import { SkipButton } from "../../features/maintenance/SkipButton";
 import {
   acceptAiSuggestionFn,
   listAiSuggestionsFn,
@@ -622,7 +625,7 @@ function MaintenanceTasksSection({
 }: {
   productId: string;
   manuals: Manual[];
-  tasks: MaintenanceTask[];
+  tasks: MaintenanceTaskListItem[];
 }) {
   const [createOpened, createDisclosure] = useDisclosure(false);
   const [editingTask, setEditingTask] = useState<MaintenanceTask | null>(null);
@@ -696,7 +699,7 @@ function TaskRow({
   manuals,
   onEdit,
 }: {
-  task: MaintenanceTask;
+  task: MaintenanceTaskListItem;
   manuals: Manual[];
   onEdit: () => void;
 }) {
@@ -758,7 +761,9 @@ function TaskRow({
           )}
         </Group>
       </Table.Td>
-      <Table.Td>{formatDate(task.lastDoneAt)}</Table.Td>
+      <Table.Td>
+        <LastDoneCell task={task} />
+      </Table.Td>
       <Table.Td>
         {task.source === "ai" ? (
           <Tooltip label={sourceManual?.fileName ?? "AI"}>
@@ -793,6 +798,7 @@ function TaskRow({
           >
             完了
           </Button>
+          <SkipButton task={task} />
           <ActionIcon variant="default" onClick={onEdit} aria-label="編集">
             ✎
           </ActionIcon>

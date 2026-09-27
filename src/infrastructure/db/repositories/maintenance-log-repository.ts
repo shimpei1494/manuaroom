@@ -17,5 +17,12 @@ export function createMaintenanceLogRepository(db: Db): MaintenanceLogRepository
         .orderBy(desc(maintenanceLogs.doneAt));
       return rows;
     },
+    async listByKind({ userId, kind }) {
+      const rows = await db
+        .select()
+        .from(maintenanceLogs)
+        .where(and(eq(maintenanceLogs.userId, userId), eq(maintenanceLogs.kind, kind)));
+      return rows;
+    },
   };
 }

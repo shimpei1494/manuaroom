@@ -5,3 +5,11 @@ export class NotFoundError extends Error {
     this.name = "NotFoundError";
   }
 }
+
+/** 業務ルール上できない操作 (例: 周期のないタスクのスキップ)。メッセージは画面にそのまま出せる文にする。 */
+export class BusinessRuleError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BusinessRuleError";
+  }
+}

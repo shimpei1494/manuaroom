@@ -1,29 +1,26 @@
 import { NotFoundError } from "../../domain/errors";
-import { completeMaintenanceTask } from "../../domain/maintenance/complete-maintenance-task";
 import type { MaintenanceLog } from "../../domain/maintenance/maintenance-log";
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
+import { skipMaintenanceTask } from "../../domain/maintenance/skip-maintenance-task";
 import type { Deps } from "../deps";
 
-export type MarkMaintenanceDoneInput = {
+export type SkipMaintenanceInput = {
   taskId: string;
-  /** 省略時は現在時刻。 */
-  doneAt?: Date;
   memo?: string | null;
 };
 
-export type MarkMaintenanceDoneResult = {
+export type SkipMaintenanceResult = {
   task: MaintenanceTask;
   log: MaintenanceLog;
 };
 
 /**
- * メンテナンスタスクを「完了済み」としてマークし、次回予定日を再計算する。
- * 再計算のルールは completeMaintenanceTask (ADR-0001)。
+ * その回はやらずに次の周期へ先送りする。再計算のルールは skipMaintenanceTask (ADR 0006)。
  */
-export async function markMaintenanceDone(
+export async function skipMaintenance(
   deps: Pick<Deps, "auth" | "clock" | "maintenanceTaskRepository" | "maintenanceLogRepository">,
-  input: MarkMaintenanceDoneInput,
-): Promise<MarkMaintenanceDoneResult> {
+  input: SkipMaintenanceInput,
+): Promise<SkipMaintenanceResult> {
   const userId = await deps.auth.requireUserId();
   const task = await deps.maintenanceTaskRepository.findById({ userId, taskId: input.taskId });
   if (!task) {
@@ -31,19 +28,17 @@ export async function markMaintenanceDone(
   }
 
   const now = deps.clock.now();
-  const doneAt = input.doneAt ?? now;
+  const updatedTask = skipMaintenanceTask(task, now, now);
 
   const log: MaintenanceLog = {
     id: crypto.randomUUID(),
     userId,
     taskId: task.id,
-    kind: "done",
-    doneAt,
+    kind: "skipped",
+    doneAt: now,
     memo: input.memo ?? null,
     createdAt: now,
   };
-
-  const updatedTask = completeMaintenanceTask(task, doneAt, now);
 
   await deps.maintenanceLogRepository.create(log);
   await deps.maintenanceTaskRepository.update(updatedTask);

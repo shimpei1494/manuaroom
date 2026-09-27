@@ -271,6 +271,9 @@ function createInMemoryMaintenanceLogRepository(): MaintenanceLogRepositoryPort 
     listByTask({ userId, taskId }) {
       return Promise.resolve(rows.filter((l) => l.userId === userId && l.taskId === taskId));
     },
+    listByKind({ userId, kind }) {
+      return Promise.resolve(rows.filter((l) => l.userId === userId && l.kind === kind));
+    },
   };
 }
 
