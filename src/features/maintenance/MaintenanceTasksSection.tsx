@@ -52,30 +52,33 @@ export function MaintenanceTasksSection({
         <Text c="dimmed">まだタスクが登録されていません。</Text>
       ) : (
         <Paper withBorder>
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>タスク</Table.Th>
-                <Table.Th>周期</Table.Th>
-                <Table.Th>次回予定</Table.Th>
-                <Table.Th>最終実施</Table.Th>
-                <Table.Th>由来</Table.Th>
-                <Table.Th />
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {tasks.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  manuals={manuals}
-                  onEdit={() => {
-                    setEditingTask(task);
-                  }}
-                />
-              ))}
-            </Table.Tbody>
-          </Table>
+          {/* スマホでは列を潰さずに横スクロールさせる */}
+          <Table.ScrollContainer minWidth={820}>
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>タスク</Table.Th>
+                  <Table.Th>周期</Table.Th>
+                  <Table.Th>次回予定</Table.Th>
+                  <Table.Th>最終実施</Table.Th>
+                  <Table.Th>由来</Table.Th>
+                  <Table.Th />
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {tasks.map((task) => (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    manuals={manuals}
+                    onEdit={() => {
+                      setEditingTask(task);
+                    }}
+                  />
+                ))}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
         </Paper>
       )}
       <Modal

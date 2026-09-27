@@ -98,7 +98,15 @@ export default defineConfig({
   plugins: [
     // dev / build ではサーバー側を workerd (Miniflare) で動かし、ローカルの D1・R2 を使う。
     // テストは Node 上で動かすので外す。
-    ...(process.env.VITEST ? [] : [cloudflare({ viteEnvironment: { name: "ssr" } })]),
+    // E2E テスト (vp run e2e) では、手元の開発データとは別の場所に保存する。
+    ...(process.env.VITEST
+      ? []
+      : [
+          cloudflare({
+            viteEnvironment: { name: "ssr" },
+            persistState: process.env.E2E ? { path: ".wrangler/e2e-state" } : true,
+          }),
+        ]),
     tanstackStart(),
     // react's vite plugin must come after start's vite plugin
     react(),

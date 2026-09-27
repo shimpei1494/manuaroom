@@ -20,5 +20,12 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["src", "drizzle.config.ts", "vite.config.ts", "worker-configuration.d.ts"]
+  "include": [
+    "src",
+    "e2e",
+    "drizzle.config.ts",
+    "playwright.config.ts",
+    "vite.config.ts",
+    "worker-configuration.d.ts"
+  ]
 }
