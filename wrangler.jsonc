@@ -10,9 +10,9 @@
   // Cloudflare Access (docs/deployment.md)。vp dev では使わない
   "vars": {
     // Zero Trust のチームドメイン (例: "family.cloudflareaccess.com")
-    "ACCESS_TEAM_DOMAIN": "",
+    "ACCESS_TEAM_DOMAIN": "broad-rain-a4d1.cloudflareaccess.com",
     // Access アプリケーションの AUD タグ
-    "ACCESS_AUD": "",
+    "ACCESS_AUD": "b6cb294011df74941cf7b979acfcd1d141803b49c5f989adaa12a3006d1ba675",
     // Access を通過した家族全員で共有するユーザー ID (ADR 0005)
     "APP_USER_ID": "family",
   },
