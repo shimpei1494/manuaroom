@@ -11,6 +11,7 @@ import type { Product } from "../domain/product/product";
 import { CompleteButton } from "../features/maintenance/CompleteButton";
 import { formatDate, formatDueLabel } from "../features/maintenance/format";
 import { SkipButton } from "../features/maintenance/SkipButton";
+import { useToday } from "../features/shared/use-today";
 import { listMaintenanceTasksFn } from "../server-functions/maintenance-tasks";
 import { listProductsFn } from "../server-functions/products";
 
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const { tasks, products } = Route.useLoaderData();
   const productMap = new Map(products.map((p) => [p.id, p] as const));
-  const today = new Date();
+  const today = useToday();
   const todo = selectTasksToDoNow(tasks, today);
   const next = todo.length === 0 ? findNextUpcoming(tasks, today) : null;
 

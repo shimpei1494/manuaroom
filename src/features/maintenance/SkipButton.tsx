@@ -9,6 +9,7 @@ import { calculateNextDueDate } from "../../domain/maintenance/calculate-next-du
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
 import { skipMaintenanceFn } from "../../server-functions/maintenance-tasks";
 import { errorMessage } from "../shared/form";
+import { useToday } from "../shared/use-today";
 import { showRecordedNotification } from "./show-recorded-notification";
 
 /**
@@ -27,10 +28,11 @@ export function SkipButton({
   const [opened, setOpened] = useState(false);
   const [memo, setMemo] = useState("");
   const [busy, setBusy] = useState(false);
+  const today = useToday();
 
   const { intervalValue, intervalUnit } = task;
   if (intervalValue === null || intervalUnit === null) return null;
-  const nextDueDate = calculateNextDueDate(new Date(), intervalValue, intervalUnit);
+  const nextDueDate = calculateNextDueDate(today, intervalValue, intervalUnit);
 
   const close = () => {
     setOpened(false);

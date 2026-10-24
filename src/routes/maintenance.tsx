@@ -8,6 +8,7 @@ import { CompleteButton } from "../features/maintenance/CompleteButton";
 import { formatDate, formatInterval } from "../features/maintenance/format";
 import { LastDoneCell } from "../features/maintenance/LastDoneCell";
 import { SkipButton } from "../features/maintenance/SkipButton";
+import { useToday } from "../features/shared/use-today";
 import { listMaintenanceTasksFn } from "../server-functions/maintenance-tasks";
 import { listProductsFn } from "../server-functions/products";
 
@@ -27,8 +28,9 @@ export const Route = createFileRoute("/maintenance")({
 function MaintenancePage() {
   const { tasks, products } = Route.useLoaderData();
   const productMap = new Map(products.map((p) => [p.id, p] as const));
+  const today = useToday();
 
-  const { overdue, thisWeek, nextMonth, later, noDate } = classifyByDueDate(tasks, new Date());
+  const { overdue, thisWeek, nextMonth, later, noDate } = classifyByDueDate(tasks, today);
 
   return (
     <Stack>
