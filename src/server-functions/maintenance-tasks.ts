@@ -61,55 +61,55 @@ const LogIdSchema = z.object({ logId: z.string().min(1) });
 const PeriodSchema = z.object({ from: z.coerce.date(), to: z.coerce.date() });
 
 export const listMaintenanceTasksFn = createServerFn({ method: "GET" })
-  .inputValidator((data: unknown) => ListMaintenanceTasksInputSchema.parse(data))
+  .validator((data: unknown) => ListMaintenanceTasksInputSchema.parse(data))
   .handler(async ({ data }) => {
     return listMaintenanceTasks(getDeps(), data);
   });
 
 export const createMaintenanceTaskFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => CreateMaintenanceTaskInputSchema.parse(data))
+  .validator((data: unknown) => CreateMaintenanceTaskInputSchema.parse(data))
   .handler(async ({ data }) => {
     return createMaintenanceTask(getDeps(), data);
   });
 
 export const markMaintenanceDoneFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => MarkMaintenanceDoneInputSchema.parse(data))
+  .validator((data: unknown) => MarkMaintenanceDoneInputSchema.parse(data))
   .handler(async ({ data }) => {
     return markMaintenanceDone(getDeps(), data);
   });
 
 export const skipMaintenanceFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => SkipMaintenanceInputSchema.parse(data))
+  .validator((data: unknown) => SkipMaintenanceInputSchema.parse(data))
   .handler(async ({ data }) => {
     return skipMaintenance(getDeps(), data);
   });
 
 export const updateMaintenanceTaskFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => UpdateMaintenanceTaskInputSchema.parse(data))
+  .validator((data: unknown) => UpdateMaintenanceTaskInputSchema.parse(data))
   .handler(async ({ data }) => {
     return updateMaintenanceTask(getDeps(), data);
   });
 
 export const deleteMaintenanceTaskFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => TaskIdSchema.parse(data))
+  .validator((data: unknown) => TaskIdSchema.parse(data))
   .handler(async ({ data }) => {
     await deleteMaintenanceTask(getDeps(), data.taskId);
   });
 
 export const listMaintenanceLogsFn = createServerFn({ method: "GET" })
-  .inputValidator((data: unknown) => TaskIdSchema.parse(data))
+  .validator((data: unknown) => TaskIdSchema.parse(data))
   .handler(async ({ data }) => {
     return listMaintenanceLogs(getDeps(), data);
   });
 
 export const undoMaintenanceLogFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => LogIdSchema.parse(data))
+  .validator((data: unknown) => LogIdSchema.parse(data))
   .handler(async ({ data }) => {
     await undoMaintenanceLog(getDeps(), data);
   });
 
 export const listMaintenanceLogsInPeriodFn = createServerFn({ method: "GET" })
-  .inputValidator((data: unknown) => PeriodSchema.parse(data))
+  .validator((data: unknown) => PeriodSchema.parse(data))
   .handler(async ({ data }) => {
     return listMaintenanceLogsInPeriod(getDeps(), data);
   });

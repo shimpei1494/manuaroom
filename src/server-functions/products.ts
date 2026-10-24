@@ -30,25 +30,25 @@ export const listProductsFn = createServerFn({ method: "GET" }).handler(async ()
 });
 
 export const getProductFn = createServerFn({ method: "GET" })
-  .inputValidator((data: unknown) => ProductIdSchema.parse(data))
+  .validator((data: unknown) => ProductIdSchema.parse(data))
   .handler(async ({ data }) => {
     return getProduct(getDeps(), data.productId);
   });
 
 export const createProductFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => ProductFieldsSchema.parse(data))
+  .validator((data: unknown) => ProductFieldsSchema.parse(data))
   .handler(async ({ data }) => {
     return createProduct(getDeps(), data);
   });
 
 export const updateProductFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => UpdateProductInputSchema.parse(data))
+  .validator((data: unknown) => UpdateProductInputSchema.parse(data))
   .handler(async ({ data }) => {
     return updateProduct(getDeps(), data);
   });
 
 export const deleteProductFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => ProductIdSchema.parse(data))
+  .validator((data: unknown) => ProductIdSchema.parse(data))
   .handler(async ({ data }) => {
     await deleteProduct(getDeps(), data.productId);
   });

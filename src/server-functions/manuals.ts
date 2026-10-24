@@ -15,13 +15,13 @@ const ProductIdSchema = z.object({ productId: z.string().min(1) });
 const ManualIdSchema = z.object({ manualId: z.string().min(1) });
 
 export const listManualsFn = createServerFn({ method: "GET" })
-  .inputValidator((data: unknown) => ProductIdSchema.parse(data))
+  .validator((data: unknown) => ProductIdSchema.parse(data))
   .handler(async ({ data }) => {
     return listManuals(getDeps(), data.productId);
   });
 
 export const uploadManualFn = createServerFn({ method: "POST" })
-  .inputValidator((data: FormData) => {
+  .validator((data: FormData) => {
     const file = data.get("file");
     const productId = data.get("productId");
     if (!(file instanceof File)) throw new Error("file is required");
@@ -52,13 +52,13 @@ export const uploadManualFn = createServerFn({ method: "POST" })
   });
 
 export const deleteManualFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => ManualIdSchema.parse(data))
+  .validator((data: unknown) => ManualIdSchema.parse(data))
   .handler(async ({ data }) => {
     await deleteManual(getDeps(), data.manualId);
   });
 
 export const analyzeManualFn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => ManualIdSchema.parse(data))
+  .validator((data: unknown) => ManualIdSchema.parse(data))
   .handler(async ({ data }) => {
     return analyzeManual(getDeps(), data.manualId);
   });

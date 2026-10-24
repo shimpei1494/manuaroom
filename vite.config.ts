@@ -90,6 +90,10 @@ export default defineConfig({
       // コールバックプロパティ経由の navigate を render 中の呼び出しと
       // 誤検出するため off にしている。
       "react-doctor/tanstack-start-no-navigate-in-render": "off",
+      // TanStack Start 1.169 で inputValidator() が validator() に改名されたが、
+      // react-doctor 0.1 のこのルールは旧名しか見ないので全サーバー関数を誤検出する。
+      // react-doctor を新しい版に上げたら戻す。
+      "react-doctor/tanstack-start-server-fn-validate-input": "off",
     },
   },
   staged: {

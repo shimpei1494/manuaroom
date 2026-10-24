@@ -12,7 +12,14 @@ import { DatesProvider } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
-import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
+import {
+  HeadContent,
+  Link,
+  Outlet,
+  Scripts,
+  createRootRoute,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import dayjs from "dayjs";
 import "dayjs/locale/ja";
@@ -112,11 +119,11 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error }: { error: Error }) {
+function ErrorComponent({ error }: ErrorComponentProps) {
   return (
     <div style={{ padding: "1rem" }}>
       <h1 style={{ color: "red" }}>エラー</h1>
-      <p>{error.message}</p>
+      <p>{error instanceof Error ? error.message : String(error)}</p>
     </div>
   );
 }

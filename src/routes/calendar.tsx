@@ -13,6 +13,7 @@ import {
   CALENDAR_ENTRY_KINDS,
   calendarEntryKindStyle,
 } from "../features/maintenance/calendar-entry-kind";
+import { useToday } from "../features/shared/use-today";
 import {
   listMaintenanceLogsInPeriodFn,
   listMaintenanceTasksFn,
@@ -46,7 +47,7 @@ export const Route = createFileRoute("/calendar")({
 function CalendarPage() {
   const { month, tasks, products, logs } = Route.useLoaderData();
   const navigate = useNavigate({ from: Route.fullPath });
-  const today = new Date();
+  const today = useToday();
   const [showProjected, setShowProjected] = useState(true);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
