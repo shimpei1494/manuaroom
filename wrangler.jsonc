@@ -1,8 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "manuaroom",
-  // TanStack Start のサーバーエントリをそのまま Worker として使う
-  "main": "@tanstack/react-start/server-entry",
+  // TanStack Start のサーバーエントリに、週 1 回の通知 (scheduled) を足した入口
+  "main": "src/server.ts",
   "compatibility_date": "2026-09-01",
   // TanStack Start が AsyncLocalStorage などの Node API を使い、
   // OpenAI SDK と PDF の base64 化で Buffer を使うため有効にする
@@ -15,6 +15,10 @@
     "ACCESS_AUD": "b6cb294011df74941cf7b979acfcd1d141803b49c5f989adaa12a3006d1ba675",
     // Access を通過した家族全員で共有するユーザー ID (ADR 0005)
     "APP_USER_ID": "family",
+  },
+  // 期限の通知 (UTC で指定。毎週土曜 0:00 UTC = 日本時間の土曜 9:00)
+  "triggers": {
+    "crons": ["0 0 * * sat"],
   },
   "observability": {
     "enabled": true,

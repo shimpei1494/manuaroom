@@ -11,6 +11,10 @@ import { createMaintenanceTaskRepository } from "./db/repositories/maintenance-t
 import { createManualRepository } from "./db/repositories/manual-repository";
 import { createProductRepository } from "./db/repositories/product-repository";
 import { getRuntimeEnv, type RuntimeEnv } from "./env/runtime-env";
+import {
+  consoleNotifier,
+  createLineBroadcastNotifier,
+} from "./notification/line-broadcast-notifier";
 import { createR2FileStorage } from "./storage/r2-file-storage";
 
 function createDeps(env: RuntimeEnv): Deps {
@@ -26,6 +30,9 @@ function createDeps(env: RuntimeEnv): Deps {
     maintenanceLogRepository: createMaintenanceLogRepository(db),
     aiSuggestionRepository: createAiSuggestionRepository(db),
     aiService: createOpenAiService(env),
+    notifier: env.LINE_CHANNEL_ACCESS_TOKEN
+      ? createLineBroadcastNotifier({ channelAccessToken: env.LINE_CHANNEL_ACCESS_TOKEN })
+      : consoleNotifier,
   };
 }
 
