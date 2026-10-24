@@ -31,8 +31,7 @@ jobs:
 
   e2e:
     name: e2e
-    # Playwright 1.56 は ubuntu-latest（26.04）のブラウザ依存を入れられないので、対応している 24.04 に固定する
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: voidzero-dev/setup-vp@v1.21.1

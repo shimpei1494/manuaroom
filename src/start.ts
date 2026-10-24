@@ -1,4 +1,4 @@
-import { createMiddleware, createStart } from "@tanstack/react-start";
+import { createCsrfMiddleware, createMiddleware, createStart } from "@tanstack/react-start";
 
 import { readAccessConfig } from "./infrastructure/auth/access-config";
 import { verifyAccessRequest } from "./infrastructure/auth/access-jwt";
@@ -24,6 +24,14 @@ const cloudflareAccessGuard = createMiddleware().server(async ({ request, next }
   return next();
 });
 
+/**
+ * server function は同一オリジンからの RPC なので、別サイトから送られたリクエストは 403 にする。
+ * Access の Cookie はブラウザが自動で付けるため、Access の検証だけでは CSRF を防げない。
+ */
+const csrfMiddleware = createCsrfMiddleware({
+  filter: (ctx) => ctx.handlerType === "serverFn",
+});
+
 export const startInstance = createStart(() => ({
-  requestMiddleware: [cloudflareAccessGuard],
+  requestMiddleware: [csrfMiddleware, cloudflareAccessGuard],
 }));

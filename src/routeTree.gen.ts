@@ -9,17 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as MaintenanceRouteImport } from './routes/maintenance'
-import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
-import { Route as ProductsNewRouteImport } from './routes/products/new'
 import { Route as ProductsProductIdRouteImport } from './routes/products/$productId'
+import { Route as ProductsNewRouteImport } from './routes/products/new'
 import { Route as ApiManualsManualIdFileRouteImport } from './routes/api/manuals/$manualId/file'
 
-const MaintenanceRoute = MaintenanceRouteImport.update({
-  id: '/maintenance',
-  path: '/maintenance',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalendarRoute = CalendarRouteImport.update({
@@ -27,9 +27,9 @@ const CalendarRoute = CalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const MaintenanceRoute = MaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
@@ -37,14 +37,14 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
   path: '/products/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProductsNewRoute = ProductsNewRouteImport.update({
-  id: '/products/new',
-  path: '/products/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
   id: '/products/$productId',
   path: '/products/$productId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsNewRoute = ProductsNewRouteImport.update({
+  id: '/products/new',
+  path: '/products/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiManualsManualIdFileRoute = ApiManualsManualIdFileRouteImport.update({
@@ -123,11 +123,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/maintenance': {
-      id: '/maintenance'
-      path: '/maintenance'
-      fullPath: '/maintenance'
-      preLoaderRoute: typeof MaintenanceRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calendar': {
@@ -137,11 +137,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/maintenance': {
+      id: '/maintenance'
+      path: '/maintenance'
+      fullPath: '/maintenance'
+      preLoaderRoute: typeof MaintenanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/': {
@@ -151,18 +151,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/products/new': {
-      id: '/products/new'
-      path: '/products/new'
-      fullPath: '/products/new'
-      preLoaderRoute: typeof ProductsNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/products/$productId': {
       id: '/products/$productId'
       path: '/products/$productId'
       fullPath: '/products/$productId'
       preLoaderRoute: typeof ProductsProductIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/new': {
+      id: '/products/new'
+      path: '/products/new'
+      fullPath: '/products/new'
+      preLoaderRoute: typeof ProductsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/manuals/$manualId/file': {
