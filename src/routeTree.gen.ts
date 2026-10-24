@@ -15,6 +15,7 @@ import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
 import { Route as ProductsProductIdRouteImport } from './routes/products/$productId'
 import { Route as ProductsNewRouteImport } from './routes/products/new'
+import { Route as ApiManualsManualIdChatRouteImport } from './routes/api/manuals/$manualId/chat'
 import { Route as ApiManualsManualIdFileRouteImport } from './routes/api/manuals/$manualId/file'
 
 const IndexRoute = IndexRouteImport.update({
@@ -47,6 +48,11 @@ const ProductsNewRoute = ProductsNewRouteImport.update({
   path: '/products/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiManualsManualIdChatRoute = ApiManualsManualIdChatRouteImport.update({
+  id: '/api/manuals/$manualId/chat',
+  path: '/api/manuals/$manualId/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiManualsManualIdFileRoute = ApiManualsManualIdFileRouteImport.update({
   id: '/api/manuals/$manualId/file',
   path: '/api/manuals/$manualId/file',
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/new': typeof ProductsNewRoute
   '/products/': typeof ProductsIndexRoute
+  '/api/manuals/$manualId/chat': typeof ApiManualsManualIdChatRoute
   '/api/manuals/$manualId/file': typeof ApiManualsManualIdFileRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/new': typeof ProductsNewRoute
   '/products': typeof ProductsIndexRoute
+  '/api/manuals/$manualId/chat': typeof ApiManualsManualIdChatRoute
   '/api/manuals/$manualId/file': typeof ApiManualsManualIdFileRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/new': typeof ProductsNewRoute
   '/products/': typeof ProductsIndexRoute
+  '/api/manuals/$manualId/chat': typeof ApiManualsManualIdChatRoute
   '/api/manuals/$manualId/file': typeof ApiManualsManualIdFileRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/products/$productId'
     | '/products/new'
     | '/products/'
+    | '/api/manuals/$manualId/chat'
     | '/api/manuals/$manualId/file'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/products/$productId'
     | '/products/new'
     | '/products'
+    | '/api/manuals/$manualId/chat'
     | '/api/manuals/$manualId/file'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/products/$productId'
     | '/products/new'
     | '/products/'
+    | '/api/manuals/$manualId/chat'
     | '/api/manuals/$manualId/file'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   ProductsNewRoute: typeof ProductsNewRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  ApiManualsManualIdChatRoute: typeof ApiManualsManualIdChatRoute
   ApiManualsManualIdFileRoute: typeof ApiManualsManualIdFileRoute
 }
 
@@ -165,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/manuals/$manualId/chat': {
+      id: '/api/manuals/$manualId/chat'
+      path: '/api/manuals/$manualId/chat'
+      fullPath: '/api/manuals/$manualId/chat'
+      preLoaderRoute: typeof ApiManualsManualIdChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/manuals/$manualId/file': {
       id: '/api/manuals/$manualId/file'
       path: '/api/manuals/$manualId/file'
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsProductIdRoute: ProductsProductIdRoute,
   ProductsNewRoute: ProductsNewRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  ApiManualsManualIdChatRoute: ApiManualsManualIdChatRoute,
   ApiManualsManualIdFileRoute: ApiManualsManualIdFileRoute,
 }
 export const routeTree = rootRouteImport
