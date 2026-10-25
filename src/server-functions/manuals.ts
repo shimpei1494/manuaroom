@@ -4,12 +4,9 @@ import { z } from "zod";
 import { analyzeManual } from "../application/usecases/analyze-manual";
 import { deleteManual } from "../application/usecases/delete-manual";
 import { listManuals } from "../application/usecases/list-manuals";
-import {
-  ALLOWED_MANUAL_MIME_TYPES,
-  MAX_MANUAL_FILE_SIZE_BYTES,
-  uploadManual,
-} from "../application/usecases/upload-manual";
+import { uploadManual } from "../application/usecases/upload-manual";
 import { getDeps } from "../infrastructure/deps";
+import { parseManualFile } from "./manual-file-form";
 
 const ProductIdSchema = z.object({ productId: z.string().min(1) });
 const ManualIdSchema = z.object({ manualId: z.string().min(1) });
@@ -22,22 +19,11 @@ export const listManualsFn = createServerFn({ method: "GET" })
 
 export const uploadManualFn = createServerFn({ method: "POST" })
   .validator((data: FormData) => {
-    const file = data.get("file");
     const productId = data.get("productId");
-    if (!(file instanceof File)) throw new Error("file is required");
     if (typeof productId !== "string" || productId.length === 0) {
       throw new Error("productId is required");
     }
-    if (file.size > MAX_MANUAL_FILE_SIZE_BYTES) {
-      throw new Error(
-        `ファイルサイズが上限 ${(MAX_MANUAL_FILE_SIZE_BYTES / 1024 / 1024).toString()}MB を超えています`,
-      );
-    }
-    if (
-      !ALLOWED_MANUAL_MIME_TYPES.includes(file.type as (typeof ALLOWED_MANUAL_MIME_TYPES)[number])
-    ) {
-      throw new Error(`PDF ファイルのみアップロード可能です (受信: ${file.type})`);
-    }
+    const file = parseManualFile(data);
     return { file, productId };
   })
   .handler(async ({ data }) => {

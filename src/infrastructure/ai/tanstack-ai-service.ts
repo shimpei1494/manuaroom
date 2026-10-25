@@ -6,7 +6,7 @@ import type { AiServicePort } from "../../application/ports/ai-service-port";
 import { INTERVAL_UNIT_VALUES } from "../../domain/maintenance/maintenance-task";
 import { requireOpenAiApiKey, type RuntimeEnv } from "../env/runtime-env";
 
-// 解析もチャットも同じモデル。変えるときは料金と PDF 入力対応を確かめる (ADR 0008)
+// 解析・製品情報の読み取り・チャットとも同じモデル。変えるときは料金と PDF 入力対応を確かめる (ADR 0008)
 // @tanstack/ai-openai 1.0 のモデル定義では gpt-6-luna の入力に document がないが、
 // OpenAI は vision 対応モデルなら PDF を受け付け、ライブラリも入力の種類では止めない
 const OPENAI_MODEL = "gpt-6-luna";
@@ -38,6 +38,25 @@ const EXTRACTION_SYSTEM_PROMPT = `あなたは家電・家具・住宅設備の�
 - 不明な情報は null にする
 - メンテナンス項目が見つからない場合は空配列を返す
 - 推測ではなく、説明書に明示的に書かれている内容のみを抽出する`;
+
+const ProductInfoSchema = z.object({
+  name: z.string().nullable(),
+  manufacturer: z.string().nullable(),
+  modelNumber: z.string().nullable(),
+  category: z.string().nullable(),
+});
+
+const PRODUCT_INFO_SYSTEM_PROMPT = `あなたは家電・家具・住宅設備の取扱説明書PDFを読む専門家です。
+説明書の対象になっている製品の情報を読み取ってください。表紙・仕様表・裏表紙に書かれていることが多いです。
+
+- name: 家族が見て何かわかる日本語の製品名 (例: "ルームエアコン", "ドラム式洗濯乾燥機")
+- manufacturer: メーカー名 (例: "パナソニック")
+- modelNumber: 型番 (例: "NA-LX129"。複数の型番が並ぶ説明書なら、すべてを「 / 」でつなぐ)
+- category: 製品の種類を表す短い言葉 (例: "エアコン", "洗濯機", "給湯器")
+
+ルール:
+- 説明書に書かれていない情報は null にする
+- 型番やメーカー名は推測しない`;
 
 function chatSystemPrompt(productName: string): string {
   return `あなたは「${productName}」の取扱説明書について答えるアシスタントです。
@@ -85,6 +104,24 @@ export function createTanstackAiService(env: RuntimeEnv): AiServicePort {
         outputSchema: MaintenanceResponseSchema,
       });
       return result.maintenances;
+    },
+
+    async extractProductInfo({ pdf, fileName }) {
+      return chat({
+        adapter: adapter(),
+        threadId: crypto.randomUUID(),
+        systemPrompts: [PRODUCT_INFO_SYSTEM_PROMPT],
+        messages: [
+          {
+            role: "user",
+            content: [
+              pdfPart(pdf, fileName),
+              { type: "text", content: "この説明書の製品情報を読み取ってください。" },
+            ],
+          },
+        ],
+        outputSchema: ProductInfoSchema,
+      });
     },
 
     answerAboutManual({ pdf, fileName, productName, threadId, messages }) {

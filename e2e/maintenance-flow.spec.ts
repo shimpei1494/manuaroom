@@ -12,7 +12,8 @@ async function createProductWithTask(page: Page, { interval }: { interval: numbe
   const productName = `E2E 製品 ${crypto.randomUUID().slice(0, 8)}`;
   await open(page, "/products/new");
   await page.getByLabel("製品名").fill(productName);
-  await page.getByRole("button", { name: "登録" }).click();
+  // スマホ幅では開発用の Router Devtools のボタンが「登録」に重なるので、Enter で送信する
+  await page.getByLabel("製品名").press("Enter");
   await page.getByRole("link", { name: productName }).first().click();
   await expect(page.getByRole("heading", { name: productName })).toBeVisible();
 
