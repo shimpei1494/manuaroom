@@ -1,5 +1,5 @@
 import type { Deps } from "../application/deps";
-import { createOpenAiService } from "./ai/openai-ai-service";
+import { createTanstackAiService } from "./ai/tanstack-ai-service";
 import { readAccessConfig } from "./auth/access-config";
 import { localAuth } from "./auth/local-auth";
 import { createSharedUserAuth } from "./auth/shared-user-auth";
@@ -29,7 +29,7 @@ function createDeps(env: RuntimeEnv): Deps {
     maintenanceTaskRepository: createMaintenanceTaskRepository(db),
     maintenanceLogRepository: createMaintenanceLogRepository(db),
     aiSuggestionRepository: createAiSuggestionRepository(db),
-    aiService: createOpenAiService(env),
+    aiService: createTanstackAiService(env),
     notifier: env.LINE_CHANNEL_ACCESS_TOKEN
       ? createLineBroadcastNotifier({ channelAccessToken: env.LINE_CHANNEL_ACCESS_TOKEN })
       : consoleNotifier,

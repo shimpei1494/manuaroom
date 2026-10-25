@@ -1,5 +1,7 @@
-# OpenAI（「AIで解析」を試す場合のみ。本番は wrangler secret put OPENAI_API_KEY）
+# OpenAI（「AIで解析」「質問する」を試す場合のみ。本番は wrangler secret put OPENAI_API_KEY）
 OPENAI_API_KEY=
+# キーなしで試すときは vp run mock:openai を起動し、上のキーに適当な値を入れてこの行を有効にする (ADR 0008)
+# OPENAI_BASE_URL=http://127.0.0.1:4010/v1
 
 # LINE 公式アカウントのチャネルアクセストークン（週 1 回の通知。本番は wrangler secret put LINE_CHANNEL_ACCESS_TOKEN）
 # 空のままなら通知は送らず、vp dev のログに本文を出す

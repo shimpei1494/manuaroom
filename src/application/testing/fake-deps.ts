@@ -4,6 +4,7 @@ import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task"
 import type { Manual } from "../../domain/manual/manual";
 import type { Product } from "../../domain/product/product";
 import type { Deps } from "../deps";
+import type { AiServicePort } from "../ports/ai-service-port";
 import type { AiSuggestionRepositoryPort } from "../ports/ai-suggestion-repository-port";
 import type { FileStoragePort } from "../ports/file-storage-port";
 import type { MaintenanceLogRepositoryPort } from "../ports/maintenance-log-repository-port";
@@ -23,6 +24,7 @@ type FakeDepsOptions = {
   now?: Date;
   userId?: string;
   analyzeManual?: () => Promise<MaintenancePayload[]>;
+  answerAboutManual?: AiServicePort["answerAboutManual"];
 };
 
 export type FakeDeps = Deps & {
@@ -51,6 +53,7 @@ export function createFakeDeps(options: FakeDepsOptions = {}): FakeDeps {
     aiSuggestionRepository: createInMemoryAiSuggestionRepository(),
     aiService: {
       analyzeManualForMaintenance: options.analyzeManual ?? (() => Promise.resolve([])),
+      answerAboutManual: options.answerAboutManual ?? (() => new Response("")),
     },
     sentNotifications,
     notifier: {

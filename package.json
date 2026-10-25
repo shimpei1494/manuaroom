@@ -16,6 +16,7 @@
     "e2e:server": "rm -rf .wrangler/e2e-state && wrangler d1 migrations apply manuaroom --local --persist-to .wrangler/e2e-state && E2E=1 vp dev --strictPort",
     "fix": "vp check --fix",
     "knip": "knip",
+    "mock:openai": "node scripts/mock-openai.mjs",
     "preview": "vp preview",
     "test": "vp test",
     "type-check": "vp check --no-lint"
@@ -27,12 +28,14 @@
     "@mantine/hooks": "^9.7.3",
     "@mantine/modals": "^9.7.3",
     "@mantine/notifications": "^9.7.3",
+    "@tanstack/ai": "^1.0.0",
+    "@tanstack/ai-openai": "^1.0.0",
+    "@tanstack/ai-react": "^1.0.0",
     "@tanstack/react-router": "^1.170.46",
     "@tanstack/react-start": "^1.169.4",
     "dayjs": "^1.11.23",
     "drizzle-orm": "^0.45.4",
     "jose": "^6.2.13",
-    "openai": "^7.43.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "zod": "^4.6.7"

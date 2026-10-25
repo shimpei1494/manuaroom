@@ -44,6 +44,10 @@ _Avoid_: 提案、レコメンド、AI結果
 ユーザーが「AIで解析」ボタンを押した時のみ実行される、Manual PDF を OpenAI API に渡して候補を抽出する処理。自動実行はしない。
 _Avoid_: AI処理、自動抽出
 
+**説明書チャット（Manual Chat）**:
+Manual 1 冊について AI に質問できる会話。回答は説明書 PDF にもとづき、根拠のページを添える。会話は保存しない（ADR 0008）。
+_Avoid_: AIチャット、ボット
+
 **承認（Accept）/ 却下（Reject）**:
 AI Suggestion に対するユーザーの判断。承認すると正式な Maintenance Task などに昇格する。却下するとそのまま残るが利用されない。
 _Avoid_: 確定、保留

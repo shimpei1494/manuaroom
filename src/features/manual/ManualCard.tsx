@@ -11,6 +11,7 @@ import { acceptAiSuggestionFn, rejectAiSuggestionFn } from "../../server-functio
 import { analyzeManualFn, deleteManualFn } from "../../server-functions/manuals";
 import { formatDate, formatInterval } from "../maintenance/format";
 import { errorMessage } from "../shared/form";
+import { ManualChatDrawer } from "./ManualChatDrawer";
 
 export function ManualCard({
   manual,
@@ -26,6 +27,7 @@ export function ManualCard({
   const remove = useServerFn(deleteManualFn);
   const [analyzing, setAnalyzing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [chatOpened, setChatOpened] = useState(false);
 
   const pending = suggestions.filter((s) => s.status === "pending");
   const accepted = suggestions.filter((s) => s.status === "accepted");
@@ -109,7 +111,7 @@ export function ManualCard({
             <Button size="xs" variant="default" onClick={onPreview}>
               プレビュー
             </Button>
-            <Tooltip label="OpenAI でメンテナンス候補を抽出します">
+            <Tooltip label="AI でメンテナンス候補を抽出します">
               <Button
                 size="xs"
                 variant="light"
@@ -119,6 +121,15 @@ export function ManualCard({
                 AIで解析
               </Button>
             </Tooltip>
+            <Button
+              size="xs"
+              variant="light"
+              onClick={() => {
+                setChatOpened(true);
+              }}
+            >
+              質問する
+            </Button>
             <Button
               size="xs"
               color="red"
@@ -147,6 +158,13 @@ export function ManualCard({
           </Stack>
         )}
       </Stack>
+      <ManualChatDrawer
+        manual={manual}
+        opened={chatOpened}
+        onClose={() => {
+          setChatOpened(false);
+        }}
+      />
     </Card>
   );
 }
