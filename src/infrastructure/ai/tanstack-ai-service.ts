@@ -7,7 +7,9 @@ import { INTERVAL_UNIT_VALUES } from "../../domain/maintenance/maintenance-task"
 import { requireOpenAiApiKey, type RuntimeEnv } from "../env/runtime-env";
 
 // 解析もチャットも同じモデル。変えるときは料金と PDF 入力対応を確かめる (ADR 0008)
-const OPENAI_MODEL = "gpt-4o-mini";
+// @tanstack/ai-openai 1.0 のモデル定義では gpt-6-luna の入力に document がないが、
+// OpenAI は vision 対応モデルなら PDF を受け付け、ライブラリも入力の種類では止めない
+const OPENAI_MODEL = "gpt-6-luna";
 
 const MaintenancePayloadSchema = z.object({
   title: z.string(),
