@@ -1,9 +1,10 @@
-import { Button, Group, Stack, TextInput, Textarea, Title } from "@mantine/core";
+import { Button, Divider, Group, Stack, TextInput, Textarea, Title } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 
+import { CreateFromManualPanel } from "../../features/product/CreateFromManualPanel";
 import { emptyToNull } from "../../features/shared/form";
 import { createProductFn } from "../../server-functions/products";
 
@@ -45,6 +46,8 @@ function NewProductPage() {
   return (
     <Stack maw={640}>
       <Title order={2}>製品の新規登録</Title>
+      <CreateFromManualPanel />
+      <Divider label="または手で入力" labelPosition="center" />
       <form
         onSubmit={form.onSubmit(async (values) => {
           await create({

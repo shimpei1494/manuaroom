@@ -13,10 +13,8 @@ export type UploadManualInput = {
   mimeType: string;
 };
 
-export async function uploadManual(
-  deps: Pick<Deps, "auth" | "clock" | "productRepository" | "storage" | "manualRepository">,
-  input: UploadManualInput,
-): Promise<Manual> {
+/** 説明書として受け付けるファイルか (サイズと種類) を確かめる。 */
+export function assertManualFile(input: { fileSize: number; mimeType: string }): void {
   if (input.fileSize > MAX_MANUAL_FILE_SIZE_BYTES) {
     throw new Error(
       `File size ${input.fileSize.toString()} exceeds ${MAX_MANUAL_FILE_SIZE_BYTES.toString()} byte limit`,
@@ -29,6 +27,13 @@ export async function uploadManual(
   ) {
     throw new Error(`Unsupported MIME type: ${input.mimeType}. Only PDF is allowed.`);
   }
+}
+
+export async function uploadManual(
+  deps: Pick<Deps, "auth" | "clock" | "productRepository" | "storage" | "manualRepository">,
+  input: UploadManualInput,
+): Promise<Manual> {
+  assertManualFile(input);
 
   const userId = await deps.auth.requireUserId();
 

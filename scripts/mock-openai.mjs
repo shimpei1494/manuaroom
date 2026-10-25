@@ -1,4 +1,4 @@
-// OpenAI のキーなしで AI 解析と説明書チャットをローカルで試すためのモック (ADR 0008)。
+// OpenAI のキーなしで AI 解析・製品情報の読み取り・説明書チャットをローカルで試すためのモック (ADR 0008)。
 // `.dev.vars` に OPENAI_BASE_URL=http://127.0.0.1:4010/v1 と適当な OPENAI_API_KEY を書いてから
 // `vp run mock:openai` と `vp dev` を並べて起動する。Responses API のストリーミングだけを真似る。
 import http from "node:http";
@@ -17,6 +17,12 @@ const EXTRACTION_RESULT = JSON.stringify({
     },
   ],
 });
+const PRODUCT_INFO_RESULT = JSON.stringify({
+  name: "ルームエアコン（モック）",
+  manufacturer: "モック電機",
+  modelNumber: "MOCK-2026",
+  category: "エアコン",
+});
 const CHAT_ANSWER = ["（モック）", "フィルターは", "2週間に1回", "掃除してください", " (p.12)"];
 
 http
@@ -25,12 +31,17 @@ http
     req.on("data", (chunk) => (body += chunk));
     req.on("end", () => {
       const request = JSON.parse(body || "{}");
-      const structured = Boolean(request.text?.format);
-      console.log(`${req.method} ${req.url} ${structured ? "解析" : "チャット"}`);
+      const format = request.text?.format;
+      // 構造化出力のスキーマにメンテナンス一覧があれば解析、なければ製品情報の読み取り
+      const kind = !format
+        ? "チャット"
+        : format.schema?.properties?.maintenances
+          ? "解析"
+          : "製品情報";
+      console.log(`${req.method} ${req.url} ${kind}`);
 
-      const pieces = structured
-        ? [EXTRACTION_RESULT.slice(0, 30), EXTRACTION_RESULT.slice(30)]
-        : CHAT_ANSWER;
+      const result = kind === "解析" ? EXTRACTION_RESULT : PRODUCT_INFO_RESULT;
+      const pieces = format ? [result.slice(0, 30), result.slice(30)] : CHAT_ANSWER;
       const response = { id: "resp_mock", object: "response", model: request.model, output: [] };
       const send = (event) => res.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
 

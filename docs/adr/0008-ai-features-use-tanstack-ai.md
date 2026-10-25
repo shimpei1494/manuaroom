@@ -9,6 +9,7 @@ AI まわり（説明書の解析と、説明書への質問チャット）は T
 - **ライブラリの型は infrastructure と入口層に閉じ込める。** `AiServicePort` は自前の型（`ManualChatMessage`）と Web 標準の `Response` だけを使う。チャットのポートは SSE の `Response` をそのまま返し、ユースケースは中身を知らない。`useChat` から届いた履歴を `ManualChatMessage` に変換するのは入口層（`src/server-functions/manual-chat-messages.ts`）。
 - **チャットは説明書 1 冊単位。** 説明書カードの「質問する」から開く。サーバーは毎回、説明書 PDF を会話の先頭に添えてから履歴を続けて送る。会話は保存せず、閉じると消える。
 - **チャットの API は `POST /api/manuals/:manualId/chat`。** server function ではないので CSRF ミドルウェアの対象外になる。代わりに `Content-Type: application/json` 以外を 415 で断り、別サイトからはブラウザの事前確認（CORS）なしに送れないようにする。Access の検証は他の API と同じくかかる。
+- **製品の新規登録は説明書 PDF からもできる。** 登録画面で PDF を選ぶと、AI（`extractProductInfo`）が製品名・メーカー・型番・カテゴリを読み取り、確認画面を挟まずにそのまま製品を登録して説明書も紐付ける。手入力の手間を減らすのが目的で、違っていればあとから「編集」で直す。製品名が読めなければ メーカー + 型番 → ファイル名 の順で埋める（`productFieldsFromManualInfo`）。メンテナンス項目の解析はこれとは別の操作のままにする（読み取りが 1 回で済み、解析の待ち時間と費用を登録に上乗せしないため）。
 - **モデルは解析・チャットとも `gpt-6-luna`。** `gpt-4o-mini` より安く（入力 $0.10 / 出力 $0.50、100 万トークンあたり）、新しい。`@tanstack/ai-openai` 1.0 の model-meta では gpt-6-luna の入力に `document` がないが、OpenAI は vision 対応モデル（gpt-4o 以降）なら PDF を受け付け、ライブラリも入力の種類では送信を止めない。モデルを変えるときは料金と PDF 入力対応を確かめる。
 
 ## 注意点
