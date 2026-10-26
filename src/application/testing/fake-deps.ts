@@ -8,6 +8,7 @@ import type { Deps } from "../deps";
 import type { AiServicePort } from "../ports/ai-service-port";
 import type { AiSuggestionRepositoryPort } from "../ports/ai-suggestion-repository-port";
 import type { FileStoragePort } from "../ports/file-storage-port";
+import type { MaintenanceLedgerPort } from "../ports/maintenance-ledger-port";
 import type { MaintenanceLogRepositoryPort } from "../ports/maintenance-log-repository-port";
 import type { MaintenanceTaskRepositoryPort } from "../ports/maintenance-task-repository-port";
 import type { ManualRepositoryPort } from "../ports/manual-repository-port";
@@ -41,6 +42,7 @@ export function createFakeDeps(options: FakeDepsOptions = {}): FakeDeps {
   let now = options.now ?? DEFAULT_NOW;
   const userId = options.userId ?? TEST_USER_ID;
   const sentNotifications: string[] = [];
+  const maintenanceStore: MaintenanceStore = { tasks: new Map(), logs: [] };
   return {
     auth: { requireUserId: () => Promise.resolve(userId) },
     clock: { now: () => now },
@@ -50,8 +52,9 @@ export function createFakeDeps(options: FakeDepsOptions = {}): FakeDeps {
     storage: createInMemoryFileStorage(),
     productRepository: createInMemoryProductRepository(),
     manualRepository: createInMemoryManualRepository(),
-    maintenanceTaskRepository: createInMemoryMaintenanceTaskRepository(),
-    maintenanceLogRepository: createInMemoryMaintenanceLogRepository(),
+    maintenanceTaskRepository: createInMemoryMaintenanceTaskRepository(maintenanceStore),
+    maintenanceLogRepository: createInMemoryMaintenanceLogRepository(maintenanceStore),
+    maintenanceLedger: createInMemoryMaintenanceLedger(maintenanceStore),
     aiSuggestionRepository: createInMemoryAiSuggestionRepository(),
     aiService: {
       analyzeManualForMaintenance: options.analyzeManual ?? (() => Promise.resolve([])),
@@ -243,8 +246,13 @@ function createInMemoryManualRepository(): ManualRepositoryPort {
   };
 }
 
-function createInMemoryMaintenanceTaskRepository(): MaintenanceTaskRepositoryPort {
-  const rows = new Map<string, MaintenanceTask>();
+/** タスクと記録は、台帳が 1 つの操作として一緒に書き換えるので、保存場所を共有する。 */
+type MaintenanceStore = { tasks: Map<string, MaintenanceTask>; logs: MaintenanceLog[] };
+
+function createInMemoryMaintenanceTaskRepository(
+  store: MaintenanceStore,
+): MaintenanceTaskRepositoryPort {
+  const rows = store.tasks;
   const owned = (userId: string, id: string) => {
     const row = rows.get(id);
     return row?.userId === userId ? row : null;
@@ -280,8 +288,17 @@ function createInMemoryMaintenanceTaskRepository(): MaintenanceTaskRepositoryPor
   };
 }
 
-function createInMemoryMaintenanceLogRepository(): MaintenanceLogRepositoryPort {
-  let rows: MaintenanceLog[] = [];
+function removeLogs(rows: MaintenanceLog[], shouldRemove: (log: MaintenanceLog) => boolean): void {
+  for (let i = rows.length - 1; i >= 0; i -= 1) {
+    const row = rows[i];
+    if (row && shouldRemove(row)) rows.splice(i, 1);
+  }
+}
+
+function createInMemoryMaintenanceLogRepository(
+  store: MaintenanceStore,
+): MaintenanceLogRepositoryPort {
+  const rows = store.logs;
   return {
     create(log) {
       rows.push(log);
@@ -315,8 +332,36 @@ function createInMemoryMaintenanceLogRepository(): MaintenanceLogRepositoryPort 
       );
     },
     delete({ userId, logId }) {
-      rows = rows.filter((l) => !(l.userId === userId && l.id === logId));
+      removeLogs(rows, (l) => l.userId === userId && l.id === logId);
       return Promise.resolve();
+    },
+  };
+}
+
+/** 判定と書き込みの間に await を挟まない。実物の D1 の batch と同じく、途中に他の操作が入らない。 */
+function createInMemoryMaintenanceLedger({ tasks, logs }: MaintenanceStore): MaintenanceLedgerPort {
+  const writeTaskIfUnchanged = (task: MaintenanceTask, readUpdatedAt: Date): boolean => {
+    const stored = tasks.get(task.id);
+    if (stored?.userId !== task.userId) return false;
+    if (stored.updatedAt.getTime() !== readUpdatedAt.getTime()) return false;
+    tasks.set(task.id, {
+      ...stored,
+      nextDueDate: task.nextDueDate,
+      lastDoneAt: task.lastDoneAt,
+      updatedAt: task.updatedAt,
+    });
+    return true;
+  };
+  return {
+    appendLog({ task, readUpdatedAt, log }) {
+      const written = writeTaskIfUnchanged(task, readUpdatedAt);
+      if (written) logs.push(log);
+      return Promise.resolve(written);
+    },
+    revertLog({ task, readUpdatedAt, logId }) {
+      const written = writeTaskIfUnchanged(task, readUpdatedAt);
+      if (written) removeLogs(logs, (l) => l.userId === task.userId && l.id === logId);
+      return Promise.resolve(written);
     },
   };
 }
