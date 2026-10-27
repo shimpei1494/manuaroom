@@ -38,13 +38,21 @@ function permutations(size: number): number[][] {
   );
 }
 
-/** 時計を読んだ順 (= 時刻の順) を守る直列実行の順番だけを、比べる相手にする。 */
+/**
+ * 時計を読んだ順 (= 時刻の順) を守る直列実行の順番だけを、比べる相手にする。
+ * 他の操作と重なってやり直した操作は、確定した最後の試行で時計を読んだ時刻で順番を決める (ADR 0009)。
+ * ただし「見つかりません」で終わった操作は何も確定していない。残っている時刻は最初の試行のもので、
+ * 順番を決める根拠にならないので、順番の制約から外す (どの順で行っても「見つからない」で終わるかは、
+ * 結果の比較で見る)。
+ */
 function consistentOrders(run: ScheduleRun): number[][] {
-  const firstReading = run.readings.map((times) => times[0]?.getTime() ?? null);
+  const lastReading = run.readings.map((times, i) =>
+    run.snapshot.results[i] === "NotFoundError" ? null : (times.at(-1)?.getTime() ?? null),
+  );
   return permutations(run.readings.length).filter((order) => {
     const position = new Map(order.map((opIndex, at) => [opIndex, at]));
-    return firstReading.every((a, i) =>
-      firstReading.every((b, j) => {
+    return lastReading.every((a, i) =>
+      lastReading.every((b, j) => {
         if (a === null || b === null || a >= b) return true;
         return (position.get(i) ?? 0) < (position.get(j) ?? 0);
       }),

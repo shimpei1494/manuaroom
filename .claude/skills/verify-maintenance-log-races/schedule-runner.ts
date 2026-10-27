@@ -47,6 +47,9 @@ const INITIAL_TASK = {
 
 type Pending = { readonly opIndex: number; readonly label: string; readonly release: () => void };
 
+// Node のグローバル。コミット前のフックはファイルを指定して型を調べ、tsconfig の node 型が効かないので宣言しておく
+declare function setImmediate(callback: () => void): unknown;
+
 /** 微小タスクがすべて片付くまで待つ。ここでの待ちは Promise.resolve だけなので 1 回で足りる。 */
 function settle(): Promise<void> {
   return new Promise((resolve) => {
@@ -140,6 +143,13 @@ export async function runSchedule(
         opIndex,
         pending,
       ),
+      // 台帳の呼び出し 1 回は D1 の batch 1 回 (1 トランザクション) なので、途中では止めない
+      maintenanceLedger: gateRepository(
+        deps.maintenanceLedger,
+        "maintenanceLedger",
+        opIndex,
+        pending,
+      ),
     };
     operation
       .run(opDeps, targets)
@@ -188,17 +198,11 @@ export async function runSerial(
   for (const opIndex of order) {
     const operation = scenario.operations[opIndex];
     if (!operation) continue;
-    const recorded = readings[opIndex] ?? [];
-    let next = 0;
+    // 直列なら重ならないので 1 回で済む。やり直した操作は、確定した最後の試行の時刻を読ませる
+    const confirmed = readings[opIndex]?.at(-1);
     const opDeps: Deps = {
       ...deps,
-      clock: {
-        now: () => {
-          const time = recorded[Math.min(next, recorded.length - 1)] ?? deps.clock.now();
-          next += 1;
-          return time;
-        },
-      },
+      clock: { now: () => confirmed ?? deps.clock.now() },
     };
     try {
       await operation.run(opDeps, targets);

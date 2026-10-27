@@ -3,6 +3,7 @@ import type { AiSuggestionRepositoryPort } from "./ports/ai-suggestion-repositor
 import type { AuthPort } from "./ports/auth-port";
 import type { ClockPort } from "./ports/clock-port";
 import type { FileStoragePort } from "./ports/file-storage-port";
+import type { MaintenanceLedgerPort } from "./ports/maintenance-ledger-port";
 import type { MaintenanceLogRepositoryPort } from "./ports/maintenance-log-repository-port";
 import type { MaintenanceTaskRepositoryPort } from "./ports/maintenance-task-repository-port";
 import type { ManualRepositoryPort } from "./ports/manual-repository-port";
@@ -21,6 +22,7 @@ export type Deps = {
   manualRepository: ManualRepositoryPort;
   maintenanceTaskRepository: MaintenanceTaskRepositoryPort;
   maintenanceLogRepository: MaintenanceLogRepositoryPort;
+  maintenanceLedger: MaintenanceLedgerPort;
   aiSuggestionRepository: AiSuggestionRepositoryPort;
   aiService: AiServicePort;
   notifier: NotifierPort;

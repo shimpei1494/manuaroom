@@ -27,6 +27,11 @@ export const SCENARIOS: readonly Scenario[] = [
   { title: "(対照) 最後の記録の取り消しを 1 人が押す", priorRecords: 1, operations: [undoLatest("A")] },
   { title: "完了を 2 人 (連打) が同時に押す", priorRecords: 0, operations: [done("A"), done("B")] },
   {
+    title: "完了を 3 人が同時に押す (やり直しが続く)",
+    priorRecords: 0,
+    operations: [done("A"), done("B"), done("C")],
+  },
+  {
     title: "完了とスキップが同時に押される",
     priorRecords: 0,
     operations: [done("A"), skip("B")],
