@@ -8,12 +8,12 @@ import {
   Stack,
   Table,
   Text,
-  Title,
   Tooltip,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
+import { IconPencil, IconPlus, IconSparkles, IconTool, IconTrash } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import dayjs from "dayjs";
@@ -23,7 +23,9 @@ import type { MaintenanceTaskListItem } from "../../application/usecases/list-ma
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
 import type { Manual } from "../../domain/manual/manual";
 import { deleteMaintenanceTaskFn } from "../../server-functions/maintenance-tasks";
+import { EmptyState } from "../shared/EmptyState";
 import { errorMessage } from "../shared/form";
+import { SectionTitle } from "../shared/SectionTitle";
 import { CompleteButton } from "./CompleteButton";
 import { formatDate, formatInterval } from "./format";
 import { LastDoneCell } from "./LastDoneCell";
@@ -45,13 +47,17 @@ export function MaintenanceTasksSection({
   return (
     <Stack gap="sm">
       <Group justify="space-between" align="center">
-        <Title order={3}>メンテナンスタスク</Title>
-        <Button onClick={createDisclosure.open}>タスクを追加</Button>
+        <SectionTitle icon={IconTool}>メンテナンスタスク</SectionTitle>
+        <Button onClick={createDisclosure.open} leftSection={<IconPlus size={18} />}>
+          タスクを追加
+        </Button>
       </Group>
       {tasks.length === 0 ? (
-        <Text c="dimmed">まだタスクが登録されていません。</Text>
+        <EmptyState compact icon={IconTool} title="まだタスクが登録されていません">
+          「タスクを追加」から手入れの予定を登録するか、説明書を AI で解析すると候補が出ます。
+        </EmptyState>
       ) : (
-        <Paper withBorder>
+        <Paper withBorder shadow="sm">
           {/* スマホでは列を潰さずに横スクロールさせる */}
           <Table.ScrollContainer minWidth={820}>
             <Table>
@@ -157,7 +163,7 @@ function TaskRow({
   return (
     <Table.Tr>
       <Table.Td>
-        <Text>{task.title}</Text>
+        <Text fw={600}>{task.title}</Text>
         {task.memo && (
           <Text size="xs" c="dimmed">
             {task.memo}
@@ -181,7 +187,9 @@ function TaskRow({
       <Table.Td>
         {task.source === "ai" ? (
           <Tooltip label={sourceManual?.fileName ?? "AI"}>
-            <Badge variant="light">AI</Badge>
+            <Badge variant="light" color="violet" leftSection={<IconSparkles size={12} />}>
+              AI
+            </Badge>
           </Tooltip>
         ) : (
           <Badge variant="default">手動</Badge>
@@ -193,7 +201,7 @@ function TaskRow({
           <SkipButton task={task} />
           <TaskHistoryButton task={task} />
           <ActionIcon variant="default" onClick={onEdit} aria-label="編集">
-            ✎
+            <IconPencil size={16} stroke={1.8} />
           </ActionIcon>
           <ActionIcon
             color="red"
@@ -202,7 +210,7 @@ function TaskRow({
             onClick={handleDelete}
             aria-label="削除"
           >
-            ×
+            <IconTrash size={16} stroke={1.8} />
           </ActionIcon>
         </Group>
       </Table.Td>

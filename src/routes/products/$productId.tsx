@@ -42,7 +42,7 @@ export const Route = createFileRoute("/products/$productId")({
 function ProductDetailPage() {
   const { product, manuals, tasks, suggestionsByManualId } = Route.useLoaderData();
   return (
-    <Stack>
+    <Stack gap="lg">
       <ProductHeader product={product} />
       <ProductInfo product={product} />
       <ManualsSection

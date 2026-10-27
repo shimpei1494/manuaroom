@@ -1,18 +1,21 @@
-import { Button, useMantineColorScheme } from "@mantine/core";
+import { ActionIcon, useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
+import { IconMoon, IconSun } from "@tabler/icons-react";
 
 export function ColorSchemeToggle() {
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === "dark";
+  const { setColorScheme } = useMantineColorScheme();
+  const computed = useComputedColorScheme("light", { getInitialValueInEffect: true });
   return (
-    <Button
+    <ActionIcon
       onClick={() => {
-        toggleColorScheme();
+        setColorScheme(computed === "dark" ? "light" : "dark");
       }}
-      size="xs"
+      size="lg"
       variant="default"
       aria-label="カラースキーム切替"
     >
-      {isDark ? "ライト" : "ダーク"}
-    </Button>
+      {/* どちらのアイコンを出すかは CSS で切り替え、サーバーとブラウザの描画差を避ける */}
+      <IconSun size={20} stroke={1.7} className="mantine-light-hidden" />
+      <IconMoon size={20} stroke={1.7} className="mantine-dark-hidden" />
+    </ActionIcon>
   );
 }

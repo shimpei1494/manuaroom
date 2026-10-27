@@ -1,5 +1,6 @@
 import { Button, type ButtonProps } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { IconCheck } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -12,9 +13,11 @@ import { showRecordedNotification } from "./show-recorded-notification";
 export function CompleteButton({
   taskId,
   size = "xs",
+  variant = "light",
 }: {
   taskId: string;
   size?: ButtonProps["size"];
+  variant?: ButtonProps["variant"];
 }) {
   const router = useRouter();
   const markDone = useServerFn(markMaintenanceDoneFn);
@@ -22,8 +25,9 @@ export function CompleteButton({
   return (
     <Button
       size={size}
-      variant="light"
+      variant={variant}
       loading={busy}
+      leftSection={<IconCheck size={size === "xs" ? 14 : 18} stroke={2.2} />}
       onClick={async () => {
         setBusy(true);
         try {
