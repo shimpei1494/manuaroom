@@ -1,0 +1,12 @@
+# pnpm 11 以降は package.json の "pnpm" 欄と .npmrc の pnpm 設定を読まないため、ここに置く
+overrides:
+  vite: npm:@voidzero-dev/vite-plus-core@1.4.0
+  vitest: 5.0.5
+
+# インストール時にビルドスクリプトを実行してよい依存関係
+allowBuilds:
+  esbuild: true
+  workerd: true
+
+publicHoistPattern:
+  - "@typescript/*"

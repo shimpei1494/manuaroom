@@ -15,7 +15,7 @@
 
 [Vite+](https://viteplus.dev/guide/) をインストールして `vp` コマンドを PATH に追加してください。
 
-パッケージマネージャーは **`pnpm@10.32.1`** を使用。依存関係の管理は `vp install` などの Vite+ コマンドで行い、`pnpm` / `npm` / `yarn` を直接呼ぶのは避けてください。
+パッケージマネージャーは **`pnpm@12.15.0`** を使用（バージョンは `package.json` の `packageManager` で固定され、Vite+ が自動で取得するので corepack は不要）。pnpm の設定（overrides など）は `pnpm-workspace.yaml` に置く。依存関係の管理は `vp install` などの Vite+ コマンドで行い、`pnpm` / `npm` / `yarn` を直接呼ぶのは避けてください。
 
 ## セットアップ
 
