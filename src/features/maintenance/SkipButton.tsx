@@ -1,5 +1,6 @@
 import { Button, type ButtonProps, Group, Modal, Stack, Text, Textarea } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { IconPlayerTrackNext } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import dayjs from "dayjs";
@@ -64,13 +65,14 @@ export function SkipButton({
       <Button
         size={size}
         variant="default"
+        leftSection={<IconPlayerTrackNext size={size === "xs" ? 14 : 18} stroke={1.8} />}
         onClick={() => {
           setOpened(true);
         }}
       >
         スキップ
       </Button>
-      <Modal opened={opened} onClose={close} title="スキップ" centered>
+      <Modal opened={opened} onClose={close} title="スキップ">
         <Stack>
           <Text size="sm">
             「{task.title}」を今回はやらずに先送りします。次回は{" "}

@@ -1,11 +1,22 @@
-import { Button, Divider, Group, Stack, TextInput, Textarea, Title } from "@mantine/core";
+import {
+  Button,
+  Divider,
+  Group,
+  Paper,
+  SimpleGrid,
+  Stack,
+  TextInput,
+  Textarea,
+} from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
+import { IconPlus } from "@tabler/icons-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 
 import { CreateFromManualPanel } from "../../features/product/CreateFromManualPanel";
 import { emptyToNull } from "../../features/shared/form";
+import { PageHeader } from "../../features/shared/PageHeader";
 import { createProductFn } from "../../server-functions/products";
 
 export const Route = createFileRoute("/products/new")({
@@ -44,74 +55,78 @@ function NewProductPage() {
   });
 
   return (
-    <Stack maw={640}>
-      <Title order={2}>製品の新規登録</Title>
+    <Stack maw={720} gap="lg">
+      <PageHeader icon={IconPlus} title="製品の新規登録" />
       <CreateFromManualPanel />
       <Divider label="または手で入力" labelPosition="center" />
-      <form
-        onSubmit={form.onSubmit(async (values) => {
-          await create({
-            data: {
-              name: values.name.trim(),
-              manufacturer: emptyToNull(values.manufacturer),
-              modelNumber: emptyToNull(values.modelNumber),
-              category: emptyToNull(values.category),
-              location: emptyToNull(values.location),
-              purchaseDate: values.purchaseDate,
-              warrantyUntil: values.warrantyUntil,
-              memo: emptyToNull(values.memo),
-            },
-          });
-          await navigate({ to: "/products" });
-        })}
-      >
-        <Stack>
-          <TextInput
-            required
-            label="製品名"
-            placeholder="例: リビングのエアコン"
-            {...form.getInputProps("name")}
-          />
-          <TextInput label="メーカー" {...form.getInputProps("manufacturer")} />
-          <TextInput label="型番" {...form.getInputProps("modelNumber")} />
-          <TextInput
-            label="カテゴリ"
-            placeholder="例: エアコン"
-            {...form.getInputProps("category")}
-          />
-          <TextInput
-            label="設置場所"
-            placeholder="例: リビング"
-            {...form.getInputProps("location")}
-          />
-          <DateInput
-            clearable
-            label="購入日"
-            valueFormat="YYYY/MM/DD"
-            {...form.getInputProps("purchaseDate")}
-          />
-          <DateInput
-            clearable
-            label="保証期限"
-            valueFormat="YYYY/MM/DD"
-            {...form.getInputProps("warrantyUntil")}
-          />
-          <Textarea label="メモ" autosize minRows={2} {...form.getInputProps("memo")} />
-          <Group justify="flex-end">
-            <Button
-              variant="default"
-              onClick={() => {
-                void navigate({ to: "/products" });
-              }}
-            >
-              キャンセル
-            </Button>
-            <Button type="submit" loading={form.submitting}>
-              登録
-            </Button>
-          </Group>
-        </Stack>
-      </form>
+      <Paper withBorder shadow="sm" p="lg">
+        <form
+          onSubmit={form.onSubmit(async (values) => {
+            await create({
+              data: {
+                name: values.name.trim(),
+                manufacturer: emptyToNull(values.manufacturer),
+                modelNumber: emptyToNull(values.modelNumber),
+                category: emptyToNull(values.category),
+                location: emptyToNull(values.location),
+                purchaseDate: values.purchaseDate,
+                warrantyUntil: values.warrantyUntil,
+                memo: emptyToNull(values.memo),
+              },
+            });
+            await navigate({ to: "/products" });
+          })}
+        >
+          <Stack>
+            <TextInput
+              required
+              label="製品名"
+              placeholder="例: リビングのエアコン"
+              {...form.getInputProps("name")}
+            />
+            <SimpleGrid cols={{ base: 1, sm: 2 }}>
+              <TextInput label="メーカー" {...form.getInputProps("manufacturer")} />
+              <TextInput label="型番" {...form.getInputProps("modelNumber")} />
+              <TextInput
+                label="カテゴリ"
+                placeholder="例: エアコン"
+                {...form.getInputProps("category")}
+              />
+              <TextInput
+                label="設置場所"
+                placeholder="例: リビング"
+                {...form.getInputProps("location")}
+              />
+              <DateInput
+                clearable
+                label="購入日"
+                valueFormat="YYYY/MM/DD"
+                {...form.getInputProps("purchaseDate")}
+              />
+              <DateInput
+                clearable
+                label="保証期限"
+                valueFormat="YYYY/MM/DD"
+                {...form.getInputProps("warrantyUntil")}
+              />
+            </SimpleGrid>
+            <Textarea label="メモ" autosize minRows={2} {...form.getInputProps("memo")} />
+            <Group justify="flex-end">
+              <Button
+                variant="default"
+                onClick={() => {
+                  void navigate({ to: "/products" });
+                }}
+              >
+                キャンセル
+              </Button>
+              <Button type="submit" loading={form.submitting}>
+                登録
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Paper>
     </Stack>
   );
 }

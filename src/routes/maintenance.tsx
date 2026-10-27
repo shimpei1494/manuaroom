@@ -1,4 +1,13 @@
-import { Anchor, Badge, Group, Paper, Stack, Table, Text, Title } from "@mantine/core";
+import { Anchor, Badge, Group, Paper, Stack, Table, Text, ThemeIcon, Title } from "@mantine/core";
+import {
+  IconAlertTriangle,
+  IconCalendarDue,
+  IconCalendarMonth,
+  IconCalendarOff,
+  IconClockHour4,
+  IconTool,
+  type Icon,
+} from "@tabler/icons-react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import type { MaintenanceTaskListItem } from "../application/usecases/list-maintenance-tasks";
@@ -8,6 +17,9 @@ import { CompleteButton } from "../features/maintenance/CompleteButton";
 import { formatDate, formatInterval } from "../features/maintenance/format";
 import { LastDoneCell } from "../features/maintenance/LastDoneCell";
 import { SkipButton } from "../features/maintenance/SkipButton";
+import { ProductAvatar } from "../features/product/ProductAvatar";
+import { EmptyState } from "../features/shared/EmptyState";
+import { PageHeader } from "../features/shared/PageHeader";
 import { useToday } from "../features/shared/use-today";
 import { listMaintenanceTasksFn } from "../server-functions/maintenance-tasks";
 import { listProductsFn } from "../server-functions/products";
@@ -33,33 +45,64 @@ function MaintenancePage() {
   const { overdue, thisWeek, nextMonth, later, noDate } = classifyByDueDate(tasks, today);
 
   return (
-    <Stack>
-      <Title order={2}>メンテナンス</Title>
+    <Stack gap="lg">
+      <PageHeader icon={IconTool} title="メンテナンス" description="すべてのお手入れを期限順に" />
       {tasks.length === 0 && (
-        <Text c="dimmed">
-          まだタスクが登録されていません。
-          <Anchor component={Link} to="/products" ml={4}>
+        <EmptyState icon={IconTool} title="まだタスクが登録されていません">
+          <Anchor component={Link} to="/products">
             製品ページ
           </Anchor>
           から登録してください。
-        </Text>
+        </EmptyState>
       )}
-      <Section title="期限超過" color="red" tasks={overdue} productMap={productMap} />
-      <Section title="今週" color="orange" tasks={thisWeek} productMap={productMap} />
-      <Section title="来月まで" color="blue" tasks={nextMonth} productMap={productMap} />
-      <Section title="それ以降" color="gray" tasks={later} productMap={productMap} />
-      <Section title="予定なし" color="gray" tasks={noDate} productMap={productMap} />
+      <Section
+        title="期限超過"
+        icon={IconAlertTriangle}
+        color="red"
+        tasks={overdue}
+        productMap={productMap}
+      />
+      <Section
+        title="今週"
+        icon={IconCalendarDue}
+        color="apricot"
+        tasks={thisWeek}
+        productMap={productMap}
+      />
+      <Section
+        title="来月まで"
+        icon={IconCalendarMonth}
+        color="blue"
+        tasks={nextMonth}
+        productMap={productMap}
+      />
+      <Section
+        title="それ以降"
+        icon={IconClockHour4}
+        color="gray"
+        tasks={later}
+        productMap={productMap}
+      />
+      <Section
+        title="予定なし"
+        icon={IconCalendarOff}
+        color="gray"
+        tasks={noDate}
+        productMap={productMap}
+      />
     </Stack>
   );
 }
 
 function Section({
   title,
+  icon: SectionIcon,
   color,
   tasks,
   productMap,
 }: {
   title: string;
+  icon: Icon;
   color: string;
   tasks: MaintenanceTaskListItem[];
   productMap: Map<string, Product>;
@@ -68,10 +111,15 @@ function Section({
   return (
     <Stack gap="xs">
       <Group gap="xs">
+        <ThemeIcon size={28} radius="xl" variant="light" color={color}>
+          <SectionIcon size={16} stroke={1.8} />
+        </ThemeIcon>
         <Title order={4}>{title}</Title>
-        <Badge color={color}>{tasks.length}</Badge>
+        <Badge color={color} variant="light" circle>
+          {tasks.length}
+        </Badge>
       </Group>
-      <Paper withBorder>
+      <Paper withBorder shadow="sm">
         {/* スマホでは列を潰さずに横スクロールさせる */}
         <Table.ScrollContainer minWidth={760}>
           <Table>
@@ -101,7 +149,7 @@ function Row({ task, product }: { task: MaintenanceTaskListItem; product: Produc
   return (
     <Table.Tr>
       <Table.Td>
-        <Text>{task.title}</Text>
+        <Text fw={600}>{task.title}</Text>
         {task.memo && (
           <Text size="xs" c="dimmed">
             {task.memo}
@@ -110,13 +158,16 @@ function Row({ task, product }: { task: MaintenanceTaskListItem; product: Produc
       </Table.Td>
       <Table.Td>
         {product ? (
-          <Anchor
-            renderRoot={(props) => (
-              <Link to="/products/$productId" params={{ productId: product.id }} {...props} />
-            )}
-          >
-            {product.name}
-          </Anchor>
+          <Group gap={8} wrap="nowrap">
+            <ProductAvatar product={product} size="md" />
+            <Anchor
+              renderRoot={(props) => (
+                <Link to="/products/$productId" params={{ productId: product.id }} {...props} />
+              )}
+            >
+              {product.name}
+            </Anchor>
+          </Group>
         ) : (
           <Text c="dimmed">(削除済み)</Text>
         )}

@@ -28,6 +28,7 @@
     "@mantine/hooks": "^9.7.3",
     "@mantine/modals": "^9.7.3",
     "@mantine/notifications": "^9.7.3",
+    "@tabler/icons-react": "^3.49.0",
     "@tanstack/ai": "^1.0.0",
     "@tanstack/ai-openai": "^1.0.0",
     "@tanstack/ai-react": "^1.0.0",

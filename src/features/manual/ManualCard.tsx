@@ -1,6 +1,24 @@
-import { Anchor, Badge, Button, Card, Group, Paper, Stack, Text, Tooltip } from "@mantine/core";
+import {
+  Anchor,
+  Badge,
+  Button,
+  Card,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  ThemeIcon,
+  Tooltip,
+} from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
+import {
+  IconEye,
+  IconFileTypePdf,
+  IconMessageChatbot,
+  IconSparkles,
+  IconTrash,
+} from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -95,26 +113,40 @@ export function ManualCard({
   };
 
   return (
-    <Card withBorder padding="md">
+    <Card padding="md">
       <Stack gap="sm">
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
-          <Stack gap={2}>
-            <Anchor component="button" type="button" onClick={onPreview}>
-              {manual.fileName}
-            </Anchor>
-            <Text size="xs" c="dimmed">
-              {formatFileSize(manual.fileSize)} · 登録日 {formatDate(manual.createdAt)}
-            </Text>
-          </Stack>
+        <Group justify="space-between" align="flex-start">
+          <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+            <ThemeIcon size={44} radius="md" variant="light" color="red">
+              <IconFileTypePdf size={26} stroke={1.6} />
+            </ThemeIcon>
+            <Stack gap={2} style={{ minWidth: 0 }}>
+              <Anchor component="button" type="button" onClick={onPreview} fw={600} ta="left">
+                {manual.fileName}
+              </Anchor>
+              <Group gap={6}>
+                <Text size="xs" c="dimmed">
+                  {formatFileSize(manual.fileSize)} · 登録日 {formatDate(manual.createdAt)}
+                </Text>
+                <AiStatusBadge status={manual.aiStatus} />
+              </Group>
+            </Stack>
+          </Group>
           <Group gap="xs">
-            <AiStatusBadge status={manual.aiStatus} />
-            <Button size="xs" variant="default" onClick={onPreview}>
+            <Button
+              size="xs"
+              variant="default"
+              onClick={onPreview}
+              leftSection={<IconEye size={14} />}
+            >
               プレビュー
             </Button>
             <Tooltip label="AI でメンテナンス候補を抽出します">
               <Button
                 size="xs"
-                variant="light"
+                variant="gradient"
+                gradient={{ from: "mint.6", to: "violet.5", deg: 120 }}
+                leftSection={<IconSparkles size={14} />}
                 loading={analyzing || manual.aiStatus === "analyzing"}
                 onClick={handleAnalyze}
               >
@@ -124,6 +156,8 @@ export function ManualCard({
             <Button
               size="xs"
               variant="light"
+              color="violet"
+              leftSection={<IconMessageChatbot size={14} />}
               onClick={() => {
                 setChatOpened(true);
               }}
@@ -134,6 +168,7 @@ export function ManualCard({
               size="xs"
               color="red"
               variant="subtle"
+              leftSection={<IconTrash size={14} />}
               loading={deleting}
               onClick={handleDelete}
             >

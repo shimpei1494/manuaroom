@@ -1,5 +1,6 @@
-import { Anchor, Badge, Box, Card, Group, Paper, Stack, Switch, Text, Title } from "@mantine/core";
+import { Anchor, Badge, Box, Card, Group, Paper, Stack, Switch, Text } from "@mantine/core";
 import { Calendar } from "@mantine/dates";
+import { IconCalendarEvent } from "@tabler/icons-react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -13,6 +14,7 @@ import {
   CALENDAR_ENTRY_KINDS,
   calendarEntryKindStyle,
 } from "../features/maintenance/calendar-entry-kind";
+import { PageHeader } from "../features/shared/PageHeader";
 import { useToday } from "../features/shared/use-today";
 import {
   listMaintenanceLogsInPeriodFn,
@@ -62,9 +64,9 @@ function CalendarPage() {
   const day = selectedDay ?? (byDay.has(todayKey) ? todayKey : null);
 
   return (
-    <Stack maw={640}>
-      <Title order={2}>カレンダー</Title>
-      <Paper withBorder p="sm">
+    <Stack maw={640} gap="lg">
+      <PageHeader icon={IconCalendarEvent} title="カレンダー" description="予定と実施の記録" />
+      <Paper withBorder shadow="sm" p="sm">
         <Calendar
           date={month}
           onDateChange={(date) => {
@@ -159,7 +161,9 @@ function DayDetail({
   return (
     <Card withBorder>
       <Stack gap="xs">
-        <Text fw={700}>{dayjs(day).format("M月D日（ddd）")}</Text>
+        <Text fw={700} ff="heading" size="lg">
+          {dayjs(day).format("M月D日（ddd）")}
+        </Text>
         {rows.length === 0 && <Text c="dimmed">予定も記録もありません。</Text>}
         {rows.map((entry) => {
           const task = taskMap.get(entry.taskId);

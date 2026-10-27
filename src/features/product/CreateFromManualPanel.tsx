@@ -1,5 +1,16 @@
-import { Button, FileInput, Group, Paper, Stack, Text, Title } from "@mantine/core";
+import {
+  Badge,
+  Button,
+  FileInput,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
+} from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { IconFileTypePdf, IconSparkles } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -18,9 +29,22 @@ export function CreateFromManualPanel() {
   const [creating, setCreating] = useState(false);
 
   return (
-    <Paper withBorder p="md">
+    <Paper p="lg" shadow="sm" className="ai-panel">
       <Stack gap="sm">
-        <Title order={4}>説明書 PDF から登録</Title>
+        <Group gap="sm" wrap="nowrap">
+          <ThemeIcon
+            size={40}
+            radius="xl"
+            variant="gradient"
+            gradient={{ from: "mint.5", to: "violet.5", deg: 120 }}
+          >
+            <IconSparkles size={22} />
+          </ThemeIcon>
+          <Title order={4}>説明書 PDF から登録</Title>
+          <Badge variant="light" color="violet">
+            おすすめ
+          </Badge>
+        </Group>
         <Text size="sm">{DESCRIPTION}</Text>
         <Group align="flex-end">
           <FileInput
@@ -28,6 +52,7 @@ export function CreateFromManualPanel() {
             label="説明書 PDF"
             placeholder="PDF ファイルを選択"
             accept="application/pdf"
+            leftSection={<IconFileTypePdf size={18} />}
             value={file}
             onChange={setFile}
             clearable
@@ -35,6 +60,9 @@ export function CreateFromManualPanel() {
           <Button
             loading={creating}
             disabled={!file}
+            variant="gradient"
+            gradient={{ from: "mint.6", to: "violet.5", deg: 120 }}
+            leftSection={<IconSparkles size={18} />}
             onClick={async () => {
               if (!file) return;
               setCreating(true);

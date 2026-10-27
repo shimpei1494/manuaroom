@@ -1,4 +1,5 @@
 import { ActionIcon, Badge, Group, Loader, Modal, Stack, Table, Text } from "@mantine/core";
+import { IconHistory } from "@tabler/icons-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
@@ -36,7 +37,7 @@ export function TaskHistoryButton({ task }: { task: MaintenanceTask }) {
           void load();
         }}
       >
-        ⏱
+        <IconHistory size={16} stroke={1.8} />
       </ActionIcon>
       <Modal
         opened={opened}

@@ -14,6 +14,7 @@ import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
+import { IconArrowLeft, IconPencil, IconTrash } from "@tabler/icons-react";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -21,6 +22,7 @@ import { useState } from "react";
 import type { Product } from "../../domain/product/product";
 import { deleteProductFn, updateProductFn } from "../../server-functions/products";
 import { emptyToNull, errorMessage } from "../shared/form";
+import { ProductAvatar } from "./ProductAvatar";
 
 export function ProductHeader({ product }: { product: Product }) {
   const router = useRouter();
@@ -60,17 +62,36 @@ export function ProductHeader({ product }: { product: Product }) {
   };
 
   return (
-    <Stack gap="xs">
+    <Stack gap="sm">
       <Anchor component={Link} to="/products" size="sm">
-        ← 製品一覧へ
+        <Group gap={4}>
+          <IconArrowLeft size={16} />
+          製品一覧へ
+        </Group>
       </Anchor>
-      <Group justify="space-between" align="flex-start">
-        <Title order={2}>{product.name}</Title>
-        <Group>
-          <Button variant="default" onClick={edit.open}>
+      <Group justify="space-between" align="center">
+        <Group gap="md" wrap="nowrap">
+          <ProductAvatar product={product} size={56} />
+          <Stack gap={0}>
+            <Title order={2}>{product.name}</Title>
+            {(product.manufacturer || product.modelNumber) && (
+              <Text size="sm" c="dimmed">
+                {[product.manufacturer, product.modelNumber].filter(Boolean).join(" ・ ")}
+              </Text>
+            )}
+          </Stack>
+        </Group>
+        <Group gap="xs">
+          <Button variant="default" onClick={edit.open} leftSection={<IconPencil size={16} />}>
             編集
           </Button>
-          <Button color="red" variant="light" loading={deleting} onClick={handleDelete}>
+          <Button
+            color="red"
+            variant="light"
+            loading={deleting}
+            onClick={handleDelete}
+            leftSection={<IconTrash size={16} />}
+          >
             削除
           </Button>
         </Group>

@@ -1,1 +1,199 @@
-/* アプリ固有のカスタムスタイルをここに追加 */
+/* アプリ全体の見た目。色や角丸などのテーマは src/theme.ts、ここは画面の骨組みと動き。 */
+
+:root {
+  --app-bg: #f4f8f6;
+  --app-bg-accent:
+    radial-gradient(1200px 400px at 80% -10%, rgba(91, 202, 167, 0.18), transparent),
+    radial-gradient(900px 360px at -10% 0%, rgba(249, 142, 62, 0.08), transparent);
+  --app-surface-blur: rgba(255, 255, 255, 0.8);
+}
+
+[data-mantine-color-scheme="dark"] {
+  --app-bg: var(--mantine-color-dark-8);
+  --app-bg-accent:
+    radial-gradient(1200px 400px at 80% -10%, rgba(51, 190, 147, 0.12), transparent),
+    radial-gradient(900px 360px at -10% 0%, rgba(249, 142, 62, 0.05), transparent);
+  --app-surface-blur: rgba(36, 36, 36, 0.8);
+}
+
+body {
+  background: var(--app-bg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: 0.02em;
+}
+
+/* ヘッダーとタブバーは背景を少し透かして、スクロールしても軽く見せる */
+.app-header,
+.tab-bar {
+  background: var(--app-surface-blur);
+  backdrop-filter: saturate(180%) blur(12px);
+}
+
+.app-navbar {
+  background: transparent;
+}
+
+.app-main {
+  background: var(--app-bg-accent), var(--app-bg);
+  min-height: 100dvh;
+}
+
+.logo {
+  color: inherit;
+  text-decoration: none;
+}
+
+.logo-text {
+  font-family: var(--mantine-font-family-headings);
+  background: linear-gradient(120deg, var(--mantine-color-mint-7), var(--mantine-color-teal-5));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.nav-link {
+  border-radius: var(--mantine-radius-md);
+  font-weight: 500;
+}
+
+/* スマホの下タブバー */
+.tab-bar {
+  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(64px + env(safe-area-inset-bottom));
+}
+
+.tab-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 64px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--mantine-color-dimmed);
+  transition: color 150ms ease;
+}
+
+.tab-bar-item[data-active] {
+  color: var(--mantine-primary-color-filled);
+  font-weight: 700;
+}
+
+.tab-bar-item[data-active] svg {
+  animation: pop 260ms ease;
+}
+
+/* ページを開いたとき、ふわっと出す */
+.page-enter {
+  animation: page-enter 280ms ease-out;
+}
+
+/* 一覧の項目を少しずつ時間差で出す */
+.stagger > * {
+  animation: page-enter 320ms ease-out backwards;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.stagger > *:nth-child(n + 5) {
+  animation-delay: 160ms;
+}
+
+/* 押せるカードは、触れると少し浮き上がる */
+.lift {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+@media (hover: hover) {
+  .lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--mantine-shadow-md);
+  }
+}
+.lift:active {
+  transform: scale(0.99);
+}
+
+/* 期限の近さを、カードの左端の色で伝える */
+.accent-left {
+  border-left: 4px solid var(--accent-color, var(--mantine-primary-color-filled));
+}
+
+.hero {
+  color: var(--mantine-color-white);
+  background:
+    radial-gradient(400px 200px at 90% 0%, rgba(255, 255, 255, 0.25), transparent),
+    linear-gradient(135deg, var(--mantine-color-mint-6), var(--mantine-color-teal-8));
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-sparkle {
+  position: absolute;
+  top: -28px;
+  right: -20px;
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.ai-panel {
+  background:
+    linear-gradient(var(--mantine-color-body), var(--mantine-color-body)) padding-box,
+    linear-gradient(120deg, var(--mantine-color-mint-4), var(--mantine-color-violet-4)) border-box;
+  border: 2px solid transparent;
+}
+
+.float {
+  animation: float 3.2s ease-in-out infinite;
+}
+
+.card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes float {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
