@@ -45,7 +45,10 @@ else
   check "no E2E server on 3100" ok
 fi
 
-if ls "$HOME"/Library/Caches/ms-playwright/chromium-* >/dev/null 2>&1; then
+# macOS は ~/Library/Caches、Linux は ~/.cache。PLAYWRIGHT_BROWSERS_PATH があればそちら
+if compgen -G "${PLAYWRIGHT_BROWSERS_PATH:-/nonexistent}/chromium-*" >/dev/null ||
+  compgen -G "$HOME/Library/Caches/ms-playwright/chromium-*" >/dev/null ||
+  compgen -G "$HOME/.cache/ms-playwright/chromium-*" >/dev/null; then
   check "Playwright chromium installed" ok
 else
   check "Playwright chromium" no "run: vp exec playwright install chromium"

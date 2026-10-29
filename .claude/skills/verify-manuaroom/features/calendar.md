@@ -10,7 +10,7 @@
 
 ## How to get to it (user POV)
 
-- サイドバーの `カレンダー` (`/calendar`)。
+- ナビの `カレンダー` (`/calendar`。PC 幅は左のサイドバー、スマホ幅は画面下のタブバー)。
 
 ## Driving it with drive.mjs
 

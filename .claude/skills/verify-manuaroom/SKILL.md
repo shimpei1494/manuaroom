@@ -59,6 +59,8 @@ node .claude/skills/verify-manuaroom/scripts/drive.mjs <journey>
 - 画面の文言を変えたら、`drive.mjs` と機能マップの文言も同じ変更で直す。
 - 変更した機能の journey だけでなく、機能マップに載っている入口は全部確かめる。1 つの入口だけでは検証が足りない。
 - 画面は `vp dev` の開発ビルドなので、右下に TanStack Router のデバッグボタンが写る。気にしない。
+- スマホ幅では画面下にナビのタブバー (`今やること` / `メンテ` / `カレンダー` / `製品`) が固定で出る。journey はナビを押さず URL で開く。右下の Router Devtools のボタンが `製品` のタブに重なるので、タブを押す操作を足すときは PC 幅で押すか URL で開く。
+- `fullPage` のスクリーンショットでも、スマホ幅のタブバーは画面の高さの位置に 1 回だけ写り、その下の内容 (製品詳細のタスク表など) を隠す。隠れた部分は画面の外 (D1) で確かめるか、要素だけを撮る。
 
 ## Evidence
 
@@ -96,4 +98,4 @@ node .claude/skills/verify-manuaroom/scripts/drive.mjs <journey>
 | `scripts/drive.mjs`  | `node .../drive.mjs <journey>`。1 つでも失敗したら終了コード 1                      |
 | `scripts/cleanup.sh` | 引数なし。何度実行しても安全                                                        |
 
-機能マップは [features/README.md](features/README.md)。アプリの変更に合わせて保つには `/maintain-verification-skill`。
+機能マップは [features/README.md](features/README.md)。画面の見た目や導線を変えたら、`drive.mjs all` を通し、文言・入口・`Gotchas` をこの skill の中で直す。
