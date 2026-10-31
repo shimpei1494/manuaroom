@@ -132,6 +132,10 @@ AWS や Google Cloud なら、GitHub Actions の OIDC で長期の鍵を置か�
 
 対応されたら OIDC に切り替える。
 
+### Workers Builds を使わない理由
+
+Cloudflare の Workers Builds（ダッシュボードで GitHub を接続する方式）でも、見張るブランチを `release` にすれば近いことができる。ただし自動で作られるビルド用トークンには D1 の権限がなく自分でトークンを用意する必要があり、プレビュービルドが本番の D1・R2 につながる点やビルド環境で Vite+ が動くかの確認も要る。設定をコードでレビューでき、リリースノートも残せる GitHub Actions を選んだ（2026-10-31）。
+
 ### リリースのしかた
 
 GitHub のリポジトリ → Releases → Draft a new release で、タグ（例: `v1.2.0`）を新しく作り、対象は `main` のまま「Generate release notes」でマージした PR の一覧を入れて Publish する。Actions タブの Deploy が緑になれば完了。
