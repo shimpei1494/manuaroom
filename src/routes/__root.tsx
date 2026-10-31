@@ -118,7 +118,13 @@ function isActive(pathname: string, to: string) {
 
 // PC は左のサイドバー、スマホは親指で押しやすい下のタブバーで移動する
 function Shell({ children }: { children: ReactNode }) {
+  // location は移動を始めた瞬間に新しい URL に変わるが、画面 (children) は読み込みが終わるまで前のページのまま。
+  // ナビの選択表示はすぐ切り替え、ページの出だしのアニメーションは表示が実際に切り替わったときだけ流す。
+  // (location で key を作ると、前のページが新しい key で作り直されて一瞬もう一度表示されてしまう)
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const renderedPathname = useRouterState({
+    select: (s) => (s.resolvedLocation ?? s.location).pathname,
+  });
   return (
     <AppShell
       header={{ height: 60 }}
@@ -149,7 +155,7 @@ function Shell({ children }: { children: ReactNode }) {
         </Stack>
       </AppShell.Navbar>
       <AppShell.Main className="app-main">
-        <div key={pathname} className="page-enter">
+        <div key={renderedPathname} className="page-enter">
           {children}
         </div>
       </AppShell.Main>
