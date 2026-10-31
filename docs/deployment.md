@@ -99,9 +99,50 @@ Cron は `wrangler.jsonc` の `triggers.crons`（`0 0 * * sat` = UTC の土曜 0
 1. **Google Cloud（`home-manuals` プロジェクト）**: Google Auth Platform → 対象 → テストユーザーに、その人の Google アカウントを追加・削除する。ここに載っていないアカウントは Google のログイン画面自体で弾かれる。
 2. **Cloudflare Access のポリシー**: `manuaroom` の Access アプリケーションのポリシーで、「メール」セレクタに登録した個別アドレスを追加・削除する。
 
-## 自動デプロイ（任意）
+## 自動デプロイ（GitHub のリリース）
 
-GitHub に push したら自動でデプロイしたい場合は、Workers & Pages → `manuaroom` → Settings → Builds で GitHub リポジトリを接続する（Workers Builds）。ビルドとデプロイのコマンドは、ビルド環境で Vite+ が使えるかを確かめてから決める。
+GitHub でリリースを公開すると、GitHub Actions（`.github/workflows/deploy.yml`）が本番の D1 にマイグレーションを当ててから `vp run deploy` を実行する。main へのマージでは出さないので、いくつかマージしてからまとめてリリースする。
+
+### 最初に一度だけ
+
+1. Cloudflare ダッシュボード → 右上のアカウントアイコン → Profile → API Tokens → Create Token → **Create Custom Token**。
+2. 権限を最小にして作る（テンプレート「Edit Cloudflare Workers」は KV やルート、ゾーンまで触れるので使わない）。
+   - Permissions: **Account → Workers Scripts → Edit** と **Account → D1 → Edit**
+   - Account Resources: Include → 自分のアカウントだけ
+   - TTL: 終了日を 1 年後などに設定する（切れたら作り直して Secret を差し替える）
+   - 初回のデプロイが権限不足（Authentication error など）で落ちたら、エラーに出た権限だけを足す。
+3. 発行したトークンと、Workers & Pages の画面右側に出ている **Account ID** を控える。
+4. GitHub のリポジトリ → Settings → Secrets and variables → Actions → New repository secret で、次の 2 つを登録する。
+
+| 名前                    | 値                   |
+| ----------------------- | -------------------- |
+| `CLOUDFLARE_API_TOKEN`  | 手順 2 のトークン    |
+| `CLOUDFLARE_ACCOUNT_ID` | 手順 3 の Account ID |
+
+`OPENAI_API_KEY` や `LINE_CHANNEL_ACCESS_TOKEN` は Worker 側に登録済みで、デプロイしても消えないので GitHub には置かない。
+
+### なぜ OIDC ではなく API トークンか
+
+AWS や Google Cloud なら、GitHub Actions の OIDC で長期の鍵を置かずに済む。Cloudflare の API は 2026-10 時点で OIDC（ワークロード ID 連携）に対応していないため、API トークンを使う（[workers-sdk の要望](https://github.com/cloudflare/workers-sdk/discussions/11434)）。代わりに次の方法で漏れたときの影響を小さくしている。
+
+- トークンの権限を Workers のスクリプトと D1 だけ、自分のアカウントだけに絞り、期限を付ける。
+- トークンは wrangler を動かす 2 つのステップにだけ渡し、依存関係のインストール中のスクリプトからは見えないようにする。
+- シークレットを扱うワークフローの Action はコミット SHA で固定する。
+- リポジトリは非公開で、フォークからの PR にはシークレットが渡らない。デプロイはリリースの公開か手動実行のときだけ動く。
+
+対応されたら OIDC に切り替える。
+
+### Workers Builds を使わない理由
+
+Cloudflare の Workers Builds（ダッシュボードで GitHub を接続する方式）でも、見張るブランチを `release` にすれば近いことができる。ただし自動で作られるビルド用トークンには D1 の権限がなく自分でトークンを用意する必要があり、プレビュービルドが本番の D1・R2 につながる点やビルド環境で Vite+ が動くかの確認も要る。設定をコードでレビューでき、リリースノートも残せる GitHub Actions を選んだ（2026-10-31）。
+
+### リリースのしかた
+
+GitHub のリポジトリ → Releases → Draft a new release で、タグ（例: `v1.2.0`）を新しく作り、対象は `main` のまま「Generate release notes」でマージした PR の一覧を入れて Publish する。Actions タブの Deploy が緑になれば完了。
+
+- 出し直したいときは Actions → Deploy → Run workflow で、選んだブランチ（通常は `main`）をそのままデプロイできる。
+- 前のバージョンに戻したいときは、Workers & Pages → `manuaroom` → Deployments から以前のデプロイに戻せる（Rollback）。ただし DB のマイグレーションは戻らない。
+- 手元から `vp run db:migrate:remote` と `vp run deploy` を実行する方法も、これまでどおり使える。
 
 ## アプリ側の仕組み
 
