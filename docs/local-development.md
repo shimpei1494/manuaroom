@@ -19,7 +19,7 @@ vp dev                           # http://localhost:5173
 
 - `vp dev` の中で `@cloudflare/vite-plugin` が Worker を workerd（Miniflare）で動かし、ローカルの D1 と R2 を用意する。Cloudflare のアカウントやログインは不要。
 - `.dev.vars` は Worker の秘密情報（本番の `wrangler secret` に相当）をローカルで渡すファイル。Git 管理外。
-- トップページ（`/`）はメンテナンス一覧（`/maintenance`）に移動する。
+- トップページ（`/`）は「今やること」。期限切れと 7 日以内に期限が来るメンテナンスが並ぶ。
 - 初回は製品が空なので、「製品」→「新規登録」から始める。
 
 ## ローカルの構成
@@ -70,7 +70,7 @@ manuals/{user_id}/{product_id}/{manual_id}.pdf
 `vp dev` を起動したまま、次を開くと Cron と同じ処理が走る。`.dev.vars` の `LINE_CHANNEL_ACCESS_TOKEN` が空なら、送る内容がターミナルに出るだけで LINE には送らない。
 
 ```bash
-curl "http://localhost:3000/cdn-cgi/handler/scheduled?cron=0+0+*+*+sat"
+curl "http://localhost:5173/cdn-cgi/handler/scheduled?cron=0+0+*+*+sat"
 ```
 
 ## Cloudflare 構成で便利になること
