@@ -105,8 +105,12 @@ GitHub でリリースを公開すると、GitHub Actions（`.github/workflows/d
 
 ### 最初に一度だけ
 
-1. Cloudflare ダッシュボード → 右上のアカウントアイコン → Profile → API Tokens → Create Token。
-2. テンプレート「Edit Cloudflare Workers」を選び、Permissions に **Account → D1 → Edit** を追加する。Account Resources は自分のアカウントだけ、Zone Resources は All zones のままでよい。
+1. Cloudflare ダッシュボード → 右上のアカウントアイコン → Profile → API Tokens → Create Token → **Create Custom Token**。
+2. 権限を最小にして作る（テンプレート「Edit Cloudflare Workers」は KV やルート、ゾーンまで触れるので使わない）。
+   - Permissions: **Account → Workers Scripts → Edit** と **Account → D1 → Edit**
+   - Account Resources: Include → 自分のアカウントだけ
+   - TTL: 終了日を 1 年後などに設定する（切れたら作り直して Secret を差し替える）
+   - 初回のデプロイが権限不足（Authentication error など）で落ちたら、エラーに出た権限だけを足す。
 3. 発行したトークンと、Workers & Pages の画面右側に出ている **Account ID** を控える。
 4. GitHub のリポジトリ → Settings → Secrets and variables → Actions → New repository secret で、次の 2 つを登録する。
 
@@ -116,6 +120,17 @@ GitHub でリリースを公開すると、GitHub Actions（`.github/workflows/d
 | `CLOUDFLARE_ACCOUNT_ID` | 手順 3 の Account ID |
 
 `OPENAI_API_KEY` や `LINE_CHANNEL_ACCESS_TOKEN` は Worker 側に登録済みで、デプロイしても消えないので GitHub には置かない。
+
+### なぜ OIDC ではなく API トークンか
+
+AWS や Google Cloud なら、GitHub Actions の OIDC で長期の鍵を置かずに済む。Cloudflare の API は 2026-10 時点で OIDC（ワークロード ID 連携）に対応していないため、API トークンを使う（[workers-sdk の要望](https://github.com/cloudflare/workers-sdk/discussions/11434)）。代わりに次の方法で漏れたときの影響を小さくしている。
+
+- トークンの権限を Workers のスクリプトと D1 だけ、自分のアカウントだけに絞り、期限を付ける。
+- トークンは wrangler を動かす 2 つのステップにだけ渡し、依存関係のインストール中のスクリプトからは見えないようにする。
+- シークレットを扱うワークフローの Action はコミット SHA で固定する。
+- リポジトリは非公開で、フォークからの PR にはシークレットが渡らない。デプロイはリリースの公開か手動実行のときだけ動く。
+
+対応されたら OIDC に切り替える。
 
 ### リリースのしかた
 
