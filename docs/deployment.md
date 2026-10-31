@@ -99,9 +99,31 @@ Cron は `wrangler.jsonc` の `triggers.crons`（`0 0 * * sat` = UTC の土曜 0
 1. **Google Cloud（`home-manuals` プロジェクト）**: Google Auth Platform → 対象 → テストユーザーに、その人の Google アカウントを追加・削除する。ここに載っていないアカウントは Google のログイン画面自体で弾かれる。
 2. **Cloudflare Access のポリシー**: `manuaroom` の Access アプリケーションのポリシーで、「メール」セレクタに登録した個別アドレスを追加・削除する。
 
-## 自動デプロイ（任意）
+## 自動デプロイ（GitHub のリリース）
 
-GitHub に push したら自動でデプロイしたい場合は、Workers & Pages → `manuaroom` → Settings → Builds で GitHub リポジトリを接続する（Workers Builds）。ビルドとデプロイのコマンドは、ビルド環境で Vite+ が使えるかを確かめてから決める。
+GitHub でリリースを公開すると、GitHub Actions（`.github/workflows/deploy.yml`）が本番の D1 にマイグレーションを当ててから `vp run deploy` を実行する。main へのマージでは出さないので、いくつかマージしてからまとめてリリースする。
+
+### 最初に一度だけ
+
+1. Cloudflare ダッシュボード → 右上のアカウントアイコン → Profile → API Tokens → Create Token。
+2. テンプレート「Edit Cloudflare Workers」を選び、Permissions に **Account → D1 → Edit** を追加する。Account Resources は自分のアカウントだけ、Zone Resources は All zones のままでよい。
+3. 発行したトークンと、Workers & Pages の画面右側に出ている **Account ID** を控える。
+4. GitHub のリポジトリ → Settings → Secrets and variables → Actions → New repository secret で、次の 2 つを登録する。
+
+| 名前                    | 値                   |
+| ----------------------- | -------------------- |
+| `CLOUDFLARE_API_TOKEN`  | 手順 2 のトークン    |
+| `CLOUDFLARE_ACCOUNT_ID` | 手順 3 の Account ID |
+
+`OPENAI_API_KEY` や `LINE_CHANNEL_ACCESS_TOKEN` は Worker 側に登録済みで、デプロイしても消えないので GitHub には置かない。
+
+### リリースのしかた
+
+GitHub のリポジトリ → Releases → Draft a new release で、タグ（例: `v1.2.0`）を新しく作り、対象は `main` のまま「Generate release notes」でマージした PR の一覧を入れて Publish する。Actions タブの Deploy が緑になれば完了。
+
+- 出し直したいときは Actions → Deploy → Run workflow で、選んだブランチ（通常は `main`）をそのままデプロイできる。
+- 前のバージョンに戻したいときは、Workers & Pages → `manuaroom` → Deployments から以前のデプロイに戻せる（Rollback）。ただし DB のマイグレーションは戻らない。
+- 手元から `vp run db:migrate:remote` と `vp run deploy` を実行する方法も、これまでどおり使える。
 
 ## アプリ側の仕組み
 

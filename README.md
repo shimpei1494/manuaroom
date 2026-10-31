@@ -97,6 +97,8 @@ PR では GitHub Actions が `vp check`・`vp test`・`vp run e2e` を実行す�
 
 Cloudflare の D1・R2・Access・シークレット（`OPENAI_API_KEY`、`LINE_CHANNEL_ACCESS_TOKEN`）の用意から、デプロイ、家族の追加、LINE 通知の設定までの手順は [docs/deployment.md](docs/deployment.md) にまとめている。
 
+GitHub でリリースを公開すると GitHub Actions が自動でデプロイする（同じく docs/deployment.md の「自動デプロイ」）。
+
 ## ドキュメント
 
 - [CONTEXT.md](CONTEXT.md) — 用語集

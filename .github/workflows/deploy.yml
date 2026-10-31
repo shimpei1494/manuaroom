@@ -1,0 +1,37 @@
+name: Deploy
+
+# GitHub でリリースを公開したら本番 (Cloudflare Workers) にデプロイする。
+# main へのマージでは出さず、リリースでまとめて出す運用 (docs/deployment.md「自動デプロイ」)。
+# 手動で出し直したいときは Actions タブの Run workflow から実行できる。
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+# 2 つのデプロイが重ならないようにする。途中のデプロイは止めずに終わるまで待つ
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # wrangler はこの 2 つの環境変数で Cloudflare に認証する
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: voidzero-dev/setup-vp@v1.21.1
+        with:
+          node-version: "26"
+          cache: true
+      # 新しいコードが新しい列を使うので、先にマイグレーションを当ててからデプロイする。
+      # 未適用のものだけが当たるので、DB に変更がないリリースでは何もしない
+      - run: vp run db:migrate:remote
+      - run: vp run deploy
