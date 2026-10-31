@@ -118,6 +118,8 @@ function PdfPreviewModal({ manual, onClose }: { manual: Manual | null; onClose: 
       padding={0}
     >
       {manual && (
+        // 同一オリジンの PDF を表示するだけ。sandbox を付けるとブラウザの PDF ビューアが動かない。
+        // oxlint-disable-next-line react-doctor/iframe-missing-sandbox
         <iframe
           title={manual.fileName}
           src={`/api/manuals/${manual.id}/file`}

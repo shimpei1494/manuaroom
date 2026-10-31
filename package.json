@@ -54,10 +54,11 @@
     "better-typescript-lib": "^2.12.0",
     "drizzle-kit": "^0.31.11",
     "knip": "^6.44.0",
+    "oxlint-plugin-react-doctor": "^0.9.18",
     "postcss": "^8.5.32",
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
-    "react-doctor": "^0.1.6",
+    "react-doctor": "^0.9.18",
     "vite": "npm:@voidzero-dev/vite-plus-core@1.4.0",
     "vite-plus": "1.4.0",
     "wrangler": "^4.156.0"
