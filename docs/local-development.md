@@ -4,7 +4,7 @@
 
 ## 必要なもの
 
-- Node.js 22 以上
+- Node.js 26 (LTS) 推奨、22 以上。CI は 26 で動かしている
 - [Vite+](https://viteplus.dev/guide/)（`vp` コマンド）
 - OpenAI API キー（「AIで解析」を試す場合のみ。なくても他の機能は動く）
 

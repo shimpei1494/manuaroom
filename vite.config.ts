@@ -2,12 +2,12 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import babel from "@rolldown/plugin-babel";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
-import reactDoctor from "react-doctor/eslint-plugin";
+import { RECOMMENDED_RULES, TANSTACK_START_RULES } from "oxlint-plugin-react-doctor";
 import { defineConfig } from "vite-plus";
 
 const reactDoctorRules = {
-  ...reactDoctor.configs.recommended.rules,
-  ...reactDoctor.configs["tanstack-start"].rules,
+  ...RECOMMENDED_RULES,
+  ...TANSTACK_START_RULES,
 };
 
 export default defineConfig({
@@ -29,7 +29,7 @@ export default defineConfig({
       node: true,
     },
     ignorePatterns: ["**/routeTree.gen.ts", "worker-configuration.d.ts"],
-    jsPlugins: [{ name: "react-doctor", specifier: "react-doctor/oxlint-plugin" }],
+    jsPlugins: [{ name: "react-doctor", specifier: "oxlint-plugin-react-doctor" }],
     options: {
       denyWarnings: true,
       typeAware: true,
@@ -40,6 +40,14 @@ export default defineConfig({
         files: ["src/router.tsx", "src/server.ts", "*.config.ts"],
         rules: {
           "no-default-export": "off",
+        },
+      },
+      // TanStack Router のルートファイルは Route だけを export し、ページ部品は同じファイルに
+      // 置く形が公式の書き方。Fast Refresh はルーターのプラグインが面倒を見る。
+      {
+        files: ["src/routes/**"],
+        rules: {
+          "react-doctor/only-export-components": "off",
         },
       },
       // レイヤーの依存は内向きに揃える (ADR-0007)
@@ -90,10 +98,12 @@ export default defineConfig({
       // コールバックプロパティ経由の navigate を render 中の呼び出しと
       // 誤検出するため off にしている。
       "react-doctor/tanstack-start-no-navigate-in-render": "off",
-      // TanStack Start 1.169 で inputValidator() が validator() に改名されたが、
-      // react-doctor 0.1 のこのルールは旧名しか見ないので全サーバー関数を誤検出する。
-      // react-doctor を新しい版に上げたら戻す。
-      "react-doctor/tanstack-start-server-fn-validate-input": "off",
+      // React Compiler (babel-plugin-react-compiler) が props の関数・オブジェクト・JSX を
+      // 自動でメモ化するので、手で useCallback / useMemo するよう求めるルールは不要。
+      "react-doctor/jsx-no-new-function-as-prop": "off",
+      "react-doctor/jsx-no-new-object-as-prop": "off",
+      "react-doctor/jsx-no-new-array-as-prop": "off",
+      "react-doctor/jsx-no-jsx-as-prop": "off",
     },
   },
   staged: {

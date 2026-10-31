@@ -50,7 +50,7 @@ docs/                開発・デプロイの手順と ADR
 
 ## ローカルで動かす
 
-必要なもの: Node.js 22 以上と [Vite+](https://viteplus.dev/guide/)（`vp` コマンド）。Cloudflare のアカウントは不要で、`vp dev` の中でローカル版の D1・R2 が立ち上がる。ログインもなく、固定のユーザーで動く。
+必要なもの: Node.js（26 LTS 推奨、22 以上）と [Vite+](https://viteplus.dev/guide/)（`vp` コマンド）。Cloudflare のアカウントは不要で、`vp dev` の中でローカル版の D1・R2 が立ち上がる。ログインもなく、固定のユーザーで動く。
 
 ```bash
 vp install                       # 止まったまま進まないときは CI=true vp install
