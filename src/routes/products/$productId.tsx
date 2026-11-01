@@ -6,16 +6,19 @@ import { MaintenanceTasksSection } from "../../features/maintenance/MaintenanceT
 import { ManualsSection } from "../../features/manual/ManualsSection";
 import { ProductHeader } from "../../features/product/ProductHeader";
 import { ProductInfo } from "../../features/product/ProductInfo";
+import { ProductLinksSection } from "../../features/product/ProductLinksSection";
 import { listAiSuggestionsFn } from "../../server-functions/ai-suggestions";
 import { listMaintenanceTasksFn } from "../../server-functions/maintenance-tasks";
 import { listManualsFn } from "../../server-functions/manuals";
+import { listProductLinksFn } from "../../server-functions/product-links";
 import { getProductFn } from "../../server-functions/products";
 
 async function loadProductDetail(productId: string) {
-  const [product, manuals, tasks] = await Promise.all([
+  const [product, manuals, tasks, links] = await Promise.all([
     getProductFn({ data: { productId } }),
     listManualsFn({ data: { productId } }),
     listMaintenanceTasksFn({ data: { productId } }),
+    listProductLinksFn({ data: { productId } }),
   ]);
   const suggestionsByManual = await Promise.all(
     manuals.map((manual) =>
@@ -29,7 +32,7 @@ async function loadProductDetail(productId: string) {
   for (const { manualId, suggestions } of suggestionsByManual) {
     suggestionsMap[manualId] = suggestions;
   }
-  return { product, manuals, tasks, suggestionsByManualId: suggestionsMap };
+  return { product, manuals, tasks, links, suggestionsByManualId: suggestionsMap };
 }
 
 export const Route = createFileRoute("/products/$productId")({
@@ -40,7 +43,7 @@ export const Route = createFileRoute("/products/$productId")({
 });
 
 function ProductDetailPage() {
-  const { product, manuals, tasks, suggestionsByManualId } = Route.useLoaderData();
+  const { product, manuals, tasks, links, suggestionsByManualId } = Route.useLoaderData();
   return (
     <Stack gap="lg">
       <ProductHeader product={product} />
@@ -51,6 +54,7 @@ function ProductDetailPage() {
         manuals={manuals}
         suggestionsByManualId={suggestionsByManualId}
       />
+      <ProductLinksSection productId={product.id} links={links} />
       <MaintenanceTasksSection productId={product.id} manuals={manuals} tasks={tasks} />
     </Stack>
   );

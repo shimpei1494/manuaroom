@@ -4,6 +4,7 @@ import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task"
 import type { Manual } from "../../domain/manual/manual";
 import type { Product } from "../../domain/product/product";
 import type { ManualProductInfo } from "../../domain/product/product-from-manual";
+import type { ProductLink } from "../../domain/product/product-link";
 import type { Deps } from "../deps";
 import type { AiServicePort } from "../ports/ai-service-port";
 import type { AiSuggestionRepositoryPort } from "../ports/ai-suggestion-repository-port";
@@ -12,6 +13,7 @@ import type { MaintenanceLedgerPort } from "../ports/maintenance-ledger-port";
 import type { MaintenanceLogRepositoryPort } from "../ports/maintenance-log-repository-port";
 import type { MaintenanceTaskRepositoryPort } from "../ports/maintenance-task-repository-port";
 import type { ManualRepositoryPort } from "../ports/manual-repository-port";
+import type { ProductLinkRepositoryPort } from "../ports/product-link-repository-port";
 import type { ProductRepositoryPort } from "../ports/product-repository-port";
 
 /**
@@ -51,6 +53,7 @@ export function createFakeDeps(options: FakeDepsOptions = {}): FakeDeps {
     },
     storage: createInMemoryFileStorage(),
     productRepository: createInMemoryProductRepository(),
+    productLinkRepository: createInMemoryProductLinkRepository(),
     manualRepository: createInMemoryManualRepository(),
     maintenanceTaskRepository: createInMemoryMaintenanceTaskRepository(maintenanceStore),
     maintenanceLogRepository: createInMemoryMaintenanceLogRepository(maintenanceStore),
@@ -88,6 +91,20 @@ export function makeProduct(overrides: Partial<Product> = {}): Product {
     purchaseDate: null,
     warrantyUntil: null,
     memo: null,
+    createdAt: DEFAULT_NOW,
+    updatedAt: DEFAULT_NOW,
+    ...overrides,
+  };
+}
+
+export function makeProductLink(overrides: Partial<ProductLink> = {}): ProductLink {
+  return {
+    id: crypto.randomUUID(),
+    userId: TEST_USER_ID,
+    productId: "product-1",
+    url: "https://example.com/support",
+    title: "公式サポート",
+    description: null,
     createdAt: DEFAULT_NOW,
     updatedAt: DEFAULT_NOW,
     ...overrides,
@@ -210,6 +227,38 @@ function createInMemoryProductRepository(): ProductRepositoryPort {
     },
     delete({ userId, productId }) {
       if (owned(userId, productId)) rows.delete(productId);
+      return Promise.resolve();
+    },
+  };
+}
+
+function createInMemoryProductLinkRepository(): ProductLinkRepositoryPort {
+  const rows = new Map<string, ProductLink>();
+  const owned = (userId: string, id: string) => {
+    const row = rows.get(id);
+    return row?.userId === userId ? row : null;
+  };
+  return {
+    create(link) {
+      rows.set(link.id, link);
+      return Promise.resolve();
+    },
+    findById({ userId, linkId }) {
+      return Promise.resolve(owned(userId, linkId));
+    },
+    listByProduct({ userId, productId }) {
+      return Promise.resolve(
+        [...rows.values()]
+          .filter((l) => l.userId === userId && l.productId === productId)
+          .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
+      );
+    },
+    update(link) {
+      if (owned(link.userId, link.id)) rows.set(link.id, link);
+      return Promise.resolve();
+    },
+    delete({ userId, linkId }) {
+      if (owned(userId, linkId)) rows.delete(linkId);
       return Promise.resolve();
     },
   };

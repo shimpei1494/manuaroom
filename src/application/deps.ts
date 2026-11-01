@@ -8,6 +8,7 @@ import type { MaintenanceLogRepositoryPort } from "./ports/maintenance-log-repos
 import type { MaintenanceTaskRepositoryPort } from "./ports/maintenance-task-repository-port";
 import type { ManualRepositoryPort } from "./ports/manual-repository-port";
 import type { NotifierPort } from "./ports/notifier-port";
+import type { ProductLinkRepositoryPort } from "./ports/product-link-repository-port";
 import type { ProductRepositoryPort } from "./ports/product-repository-port";
 
 /**
@@ -19,6 +20,7 @@ export type Deps = {
   clock: ClockPort;
   storage: FileStoragePort;
   productRepository: ProductRepositoryPort;
+  productLinkRepository: ProductLinkRepositoryPort;
   manualRepository: ManualRepositoryPort;
   maintenanceTaskRepository: MaintenanceTaskRepositoryPort;
   maintenanceLogRepository: MaintenanceLogRepositoryPort;

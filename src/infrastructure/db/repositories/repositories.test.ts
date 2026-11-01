@@ -5,6 +5,7 @@ import {
   makeMaintenanceTask,
   makeManual,
   makeProduct,
+  makeProductLink,
 } from "../../../application/testing/fake-deps";
 import type { MaintenanceLog } from "../../../domain/maintenance/maintenance-log";
 import { clearTables, startLocalCloudflareEnv } from "../../testing/local-cloudflare-env";
@@ -13,6 +14,7 @@ import { createAiSuggestionRepository } from "./ai-suggestion-repository";
 import { createMaintenanceLogRepository } from "./maintenance-log-repository";
 import { createMaintenanceTaskRepository } from "./maintenance-task-repository";
 import { createManualRepository } from "./manual-repository";
+import { createProductLinkRepository } from "./product-link-repository";
 import { createProductRepository } from "./product-repository";
 
 // ローカル D1 (Miniflare) に対する結合テスト。ユーザー単位の絞り込みと、
@@ -61,6 +63,42 @@ describe("productRepository", () => {
     const found = await repo.findById({ userId: product.userId, productId: product.id });
 
     expect(found?.purchaseDate).toEqual(new Date("2025-04-01T00:00:00Z"));
+  });
+});
+
+describe("productLinkRepository", () => {
+  test("製品ごとに登録順で返し、他のユーザーのリンクは出てこない", async () => {
+    const repo = createProductLinkRepository(db);
+    const product = makeProduct();
+    await createProductRepository(db).create(product);
+    const first = makeProductLink({
+      productId: product.id,
+      createdAt: new Date("2026-03-01T00:00:00Z"),
+    });
+    const second = makeProductLink({
+      productId: product.id,
+      createdAt: new Date("2026-03-02T00:00:00Z"),
+    });
+    await repo.create(second);
+    await repo.create(first);
+
+    const list = await repo.listByProduct({ userId: product.userId, productId: product.id });
+
+    expect(list.map((l) => l.id)).toEqual([first.id, second.id]);
+    expect(await repo.listByProduct({ userId: OTHER_USER_ID, productId: product.id })).toEqual([]);
+    expect(await repo.findById({ userId: OTHER_USER_ID, linkId: first.id })).toBeNull();
+  });
+
+  test("製品を消すとリンクも消える (CASCADE)", async () => {
+    const repo = createProductLinkRepository(db);
+    const product = makeProduct();
+    await createProductRepository(db).create(product);
+    const link = makeProductLink({ productId: product.id });
+    await repo.create(link);
+
+    await createProductRepository(db).delete({ userId: product.userId, productId: product.id });
+
+    expect(await repo.findById({ userId: link.userId, linkId: link.id })).toBeNull();
   });
 });
 
