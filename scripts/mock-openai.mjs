@@ -15,6 +15,22 @@ const EXTRACTION_RESULT = JSON.stringify({
       sourcePage: 12,
       url: null,
     },
+    {
+      title: "熱交換器の点検",
+      intervalValue: 1,
+      intervalUnit: "year",
+      memo: null,
+      sourcePage: 20,
+      url: null,
+    },
+    {
+      title: "リモコンの電池交換",
+      intervalValue: null,
+      intervalUnit: null,
+      memo: "電池が切れたら交換",
+      sourcePage: 31,
+      url: null,
+    },
   ],
 });
 const PRODUCT_INFO_RESULT = JSON.stringify({

@@ -13,6 +13,7 @@ import {
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import {
+  IconChecks,
   IconEye,
   IconFileTypePdf,
   IconMessageChatbot,
@@ -25,7 +26,11 @@ import { useState } from "react";
 
 import type { AiSuggestion } from "../../domain/ai-suggestion/ai-suggestion";
 import type { Manual } from "../../domain/manual/manual";
-import { acceptAiSuggestionFn, rejectAiSuggestionFn } from "../../server-functions/ai-suggestions";
+import {
+  acceptAiSuggestionFn,
+  acceptAllAiSuggestionsFn,
+  rejectAiSuggestionFn,
+} from "../../server-functions/ai-suggestions";
 import { analyzeManualFn, deleteManualFn } from "../../server-functions/manuals";
 import { formatDate, formatInterval } from "../maintenance/format";
 import { errorMessage } from "../shared/form";
@@ -180,10 +185,13 @@ export function ManualCard({
         </Group>
         {suggestions.length > 0 && (
           <Stack gap="xs" mt="sm">
-            <Text size="sm" fw={500}>
-              AI 候補 ({pending.length} pending / {accepted.length} accepted / {rejected.length}{" "}
-              rejected)
-            </Text>
+            <Group justify="space-between" gap="xs">
+              <Text size="sm" fw={500}>
+                AI 候補 ({pending.length} pending / {accepted.length} accepted / {rejected.length}{" "}
+                rejected)
+              </Text>
+              {pending.length >= 2 && <AcceptAllButton manualId={manual.id} pending={pending} />}
+            </Group>
             {pending.length === 0 && (
               <Text size="xs" c="dimmed">
                 未処理の候補はありません。
@@ -204,6 +212,67 @@ export function ManualCard({
         }}
       />
     </Card>
+  );
+}
+
+function AcceptAllButton({ manualId, pending }: { manualId: string; pending: AiSuggestion[] }) {
+  const router = useRouter();
+  const acceptAll = useServerFn(acceptAllAiSuggestionsFn);
+  const [busy, setBusy] = useState(false);
+  const count = pending.length.toString();
+
+  const handleClick = () => {
+    modals.openConfirmModal({
+      title: "候補をまとめて承認",
+      centered: true,
+      children: (
+        <Stack gap="xs">
+          <Text size="sm">次の {count} 件をメンテナンスタスクに登録します。</Text>
+          <Stack gap={2} component="ul" m={0} pl="md">
+            {pending.map((s) => (
+              <Text key={s.id} size="sm" component="li">
+                {s.payload.title}
+              </Text>
+            ))}
+          </Stack>
+          <Text size="xs" c="dimmed">
+            不要なタスクは、あとから個別に削除できます。
+          </Text>
+        </Stack>
+      ),
+      labels: { confirm: `${count} 件を承認`, cancel: "キャンセル" },
+      onConfirm: async () => {
+        setBusy(true);
+        try {
+          const { acceptedCount } = await acceptAll({ data: { manualId } });
+          notifications.show({
+            color: "green",
+            message: `${acceptedCount.toString()} 件の候補をメンテナンスタスクに登録しました`,
+          });
+          await router.invalidate();
+        } catch (e) {
+          notifications.show({
+            color: "red",
+            title: "まとめて承認できませんでした",
+            message: errorMessage(e),
+          });
+        } finally {
+          setBusy(false);
+        }
+      },
+    });
+  };
+
+  return (
+    <Button
+      size="xs"
+      variant="light"
+      leftSection={<IconChecks size={14} />}
+      loading={busy}
+      onClick={handleClick}
+    >
+      すべて承認 ({count})
+    </Button>
   );
 }
 

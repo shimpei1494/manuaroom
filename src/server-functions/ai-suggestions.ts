@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { acceptAiSuggestion } from "../application/usecases/accept-ai-suggestion";
+import { acceptAllAiSuggestions } from "../application/usecases/accept-all-ai-suggestions";
 import { listAiSuggestions } from "../application/usecases/list-ai-suggestions";
 import { rejectAiSuggestion } from "../application/usecases/reject-ai-suggestion";
 import { getDeps } from "../infrastructure/deps";
@@ -19,6 +20,13 @@ export const acceptAiSuggestionFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => SuggestionIdSchema.parse(data))
   .handler(async ({ data }) => {
     return acceptAiSuggestion(getDeps(), data.suggestionId);
+  });
+
+export const acceptAllAiSuggestionsFn = createServerFn({ method: "POST" })
+  .validator((data: unknown) => ManualIdSchema.parse(data))
+  .handler(async ({ data }) => {
+    const tasks = await acceptAllAiSuggestions(getDeps(), data.manualId);
+    return { acceptedCount: tasks.length };
   });
 
 export const rejectAiSuggestionFn = createServerFn({ method: "POST" })

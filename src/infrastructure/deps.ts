@@ -5,6 +5,7 @@ import { localAuth } from "./auth/local-auth";
 import { createSharedUserAuth } from "./auth/shared-user-auth";
 import { systemClock } from "./clock/system-clock";
 import { createDb } from "./db/client";
+import { createAiSuggestionAcceptance } from "./db/repositories/ai-suggestion-acceptance";
 import { createAiSuggestionRepository } from "./db/repositories/ai-suggestion-repository";
 import { createMaintenanceLedger } from "./db/repositories/maintenance-ledger";
 import { createMaintenanceLogRepository } from "./db/repositories/maintenance-log-repository";
@@ -33,6 +34,7 @@ function createDeps(env: RuntimeEnv): Deps {
     maintenanceLogRepository: createMaintenanceLogRepository(db),
     maintenanceLedger: createMaintenanceLedger(db),
     aiSuggestionRepository: createAiSuggestionRepository(db),
+    aiSuggestionAcceptance: createAiSuggestionAcceptance(db),
     aiService: createTanstackAiService(env),
     notifier: env.LINE_CHANNEL_ACCESS_TOKEN
       ? createLineBroadcastNotifier({ channelAccessToken: env.LINE_CHANNEL_ACCESS_TOKEN })

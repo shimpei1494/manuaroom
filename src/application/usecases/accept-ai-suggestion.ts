@@ -1,14 +1,11 @@
+import { suggestionToTask } from "../../domain/ai-suggestion/suggestion-to-task";
 import { NotFoundError } from "../../domain/errors";
-import { calculateNextDueDate } from "../../domain/maintenance/calculate-next-due-date";
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
 import type { Deps } from "../deps";
 
-/**
- * AI Suggestion を承認して正式な Maintenance Task に昇格させる。
- * interval が両方定義されていれば次回予定日を今日基準で計算し、片方でも欠けていれば null。
- */
+/** AI Suggestion を承認して正式な Maintenance Task に昇格させる。 */
 export async function acceptAiSuggestion(
-  deps: Pick<Deps, "auth" | "clock" | "aiSuggestionRepository" | "maintenanceTaskRepository">,
+  deps: Pick<Deps, "auth" | "clock" | "aiSuggestionRepository" | "aiSuggestionAcceptance">,
   suggestionId: string,
 ): Promise<MaintenanceTask> {
   const userId = await deps.auth.requireUserId();
@@ -16,41 +13,20 @@ export async function acceptAiSuggestion(
   if (!suggestion) {
     throw new NotFoundError("AI suggestion", suggestionId);
   }
+  const notPending = () =>
+    new Error(`AI suggestion is not pending: ${suggestionId} (status=${suggestion.status})`);
   if (suggestion.status !== "pending") {
-    throw new Error(`AI suggestion is not pending: ${suggestionId} (status=${suggestion.status})`);
+    throw notPending();
   }
 
-  const { payload } = suggestion;
-  const now = deps.clock.now();
-  const nextDueDate =
-    payload.intervalValue !== null && payload.intervalUnit !== null
-      ? calculateNextDueDate(now, payload.intervalValue, payload.intervalUnit)
-      : null;
-
-  const task: MaintenanceTask = {
-    id: crypto.randomUUID(),
+  const task = suggestionToTask({ suggestion, taskId: crypto.randomUUID(), now: deps.clock.now() });
+  const created = await deps.aiSuggestionAcceptance.accept({
     userId,
-    productId: suggestion.productId,
-    title: payload.title,
-    intervalValue: payload.intervalValue,
-    intervalUnit: payload.intervalUnit,
-    nextDueDate,
-    lastDoneAt: null,
-    memo: payload.memo,
-    url: payload.url,
-    source: "ai",
-    sourceManualId: suggestion.manualId,
-    sourcePage: payload.sourcePage,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  await deps.maintenanceTaskRepository.create(task);
-  await deps.aiSuggestionRepository.updateStatus({
-    userId,
-    suggestionId,
-    status: "accepted",
+    items: [{ suggestionId, task }],
   });
-
+  // 読んでから書くまでの間に、他の操作 (一括承認・却下・二度押し) が先に判断した
+  if (created.length === 0) {
+    throw notPending();
+  }
   return task;
 }
