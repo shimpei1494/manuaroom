@@ -1,6 +1,6 @@
 import { Button, FileInput, Group, Modal, Paper, Stack, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconBook2, IconFileTypePdf, IconUpload } from "@tabler/icons-react";
+import { IconBook2, IconExternalLink, IconFileTypePdf, IconUpload } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import { EmptyState } from "../shared/EmptyState";
 import { errorMessage } from "../shared/form";
 import { SectionTitle } from "../shared/SectionTitle";
 import { ManualCard } from "./ManualCard";
+import { manualFileUrl } from "./pdf-preview";
 
 export function ManualsSection({
   productId,
@@ -116,7 +117,26 @@ function PdfPreviewModal({ manual, onClose }: { manual: Manual | null; onClose: 
     <Modal
       opened={manual !== null}
       onClose={onClose}
-      title={manual?.fileName ?? ""}
+      title={
+        manual && (
+          <Group gap="sm" wrap="nowrap">
+            <Text fw={600} truncate>
+              {manual.fileName}
+            </Text>
+            <Button
+              component="a"
+              href={manualFileUrl(manual.id)}
+              target="_blank"
+              rel="noopener"
+              size="compact-xs"
+              variant="subtle"
+              leftSection={<IconExternalLink size={14} />}
+            >
+              新しいタブで開く
+            </Button>
+          </Group>
+        )
+      }
       size="90%"
       padding={0}
     >
@@ -125,7 +145,7 @@ function PdfPreviewModal({ manual, onClose }: { manual: Manual | null; onClose: 
         // oxlint-disable-next-line react-doctor/iframe-missing-sandbox
         <iframe
           title={manual.fileName}
-          src={`/api/manuals/${manual.id}/file`}
+          src={manualFileUrl(manual.id)}
           style={{ width: "100%", height: "80vh", border: 0, display: "block" }}
         />
       )}
