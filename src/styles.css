@@ -161,6 +161,38 @@ h4 {
   animation: float 3.2s ease-in-out infinite;
 }
 
+/* 説明書チャットの AI の回答。スマホで読みやすいよう、見出しは控えめに、行間は広めに */
+.chat-answer {
+  font-size: var(--mantine-font-size-sm);
+  line-height: 1.75;
+}
+.chat-answer :where(h1, h2, h3, h4, h5, h6) {
+  margin-top: var(--mantine-spacing-md);
+  margin-bottom: var(--mantine-spacing-xs);
+  font-size: var(--mantine-font-size-md);
+  line-height: 1.5;
+}
+.chat-answer :where(p, ul, ol) {
+  margin-top: 0;
+  margin-bottom: var(--mantine-spacing-sm);
+}
+.chat-answer :where(li) {
+  margin-bottom: 4px;
+}
+.chat-answer :where(strong) {
+  color: var(--mantine-color-bright);
+}
+.chat-answer :where(table) {
+  display: block;
+  overflow-x: auto;
+}
+
+/* チャットの入力欄。iPhone のホームバーに重ならないよう下に余白を取る */
+.chat-composer {
+  border-top: 1px solid var(--mantine-color-default-border);
+  padding-bottom: calc(var(--mantine-spacing-sm) + env(safe-area-inset-bottom));
+}
+
 .card-link {
   color: inherit;
   text-decoration: none;

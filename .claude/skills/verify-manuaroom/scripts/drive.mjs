@@ -133,8 +133,14 @@ const journeys = {
     await page.getByRole("button", { name: "質問する" }).click();
     const drawer = page.getByRole("dialog", { name: /に質問/ });
     await drawer.getByLabel("質問").fill("フィルターの掃除頻度は?");
-    await drawer.getByRole("button", { name: "送信" }).click();
-    await expect(drawer).toContainText("（モック）フィルターは2週間に1回掃除してください (p.12)");
+    // 送信ボタンは右下にあり、開発用の Router Devtools のボタンが重なるので Enter で送る
+    await drawer.getByLabel("質問").press("Enter");
+    await expect(drawer).toContainText("（モック）フィルターは 2週間に1回 掃除してください (p.12)");
+    // 回答は Markdown として整形され、記号のまま出ない
+    await expect(drawer.locator("strong", { hasText: "2週間に1回" })).toBeVisible();
+    await expect(drawer.getByRole("heading", { name: "手順" })).toBeVisible();
+    await expect(drawer.getByRole("listitem")).toHaveCount(3);
+    await expect(drawer).not.toContainText("**");
     await shot(page, "manual-4-chat");
     await page.keyboard.press("Escape");
 

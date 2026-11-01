@@ -15,10 +15,12 @@ import { ManualCard } from "./ManualCard";
 
 export function ManualsSection({
   productId,
+  productName,
   manuals,
   suggestionsByManualId,
 }: {
   productId: string;
+  productName: string;
   manuals: Manual[];
   suggestionsByManualId: Record<string, AiSuggestion[]>;
 }) {
@@ -89,6 +91,7 @@ export function ManualsSection({
             <ManualCard
               key={manual.id}
               manual={manual}
+              productName={productName}
               suggestions={suggestionsByManualId[manual.id] ?? []}
               onPreview={() => {
                 setPreviewManual(manual);

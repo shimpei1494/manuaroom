@@ -47,6 +47,7 @@ function ProductDetailPage() {
       <ProductInfo product={product} />
       <ManualsSection
         productId={product.id}
+        productName={product.name}
         manuals={manuals}
         suggestionsByManualId={suggestionsByManualId}
       />
