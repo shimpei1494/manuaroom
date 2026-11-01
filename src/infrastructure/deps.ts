@@ -10,6 +10,7 @@ import { createMaintenanceLedger } from "./db/repositories/maintenance-ledger";
 import { createMaintenanceLogRepository } from "./db/repositories/maintenance-log-repository";
 import { createMaintenanceTaskRepository } from "./db/repositories/maintenance-task-repository";
 import { createManualRepository } from "./db/repositories/manual-repository";
+import { createProductLinkRepository } from "./db/repositories/product-link-repository";
 import { createProductRepository } from "./db/repositories/product-repository";
 import { getRuntimeEnv, type RuntimeEnv } from "./env/runtime-env";
 import {
@@ -26,6 +27,7 @@ function createDeps(env: RuntimeEnv): Deps {
     clock: systemClock,
     storage: createR2FileStorage(env.BUCKET),
     productRepository: createProductRepository(db),
+    productLinkRepository: createProductLinkRepository(db),
     manualRepository: createManualRepository(db),
     maintenanceTaskRepository: createMaintenanceTaskRepository(db),
     maintenanceLogRepository: createMaintenanceLogRepository(db),

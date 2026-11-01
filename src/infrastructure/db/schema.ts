@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 import {
   AI_SUGGESTION_STATUS_VALUES,
@@ -56,6 +56,24 @@ export const manuals = sqliteTable("manuals", {
   aiStatus: text("ai_status", { enum: AI_STATUS_VALUES }).notNull().default("not_analyzed"),
   createdAt: createdAt(),
 });
+
+// 製品の関連リンク (公式ページ・サポート FAQ など)。人が別タブで開く用で、AI には渡さない
+export const productLinks = sqliteTable(
+  "product_links",
+  {
+    id: id(),
+    userId: text("user_id").notNull(),
+    productId: text("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("product_links_product_id_idx").on(t.productId)],
+);
 
 export const maintenanceTasks = sqliteTable("maintenance_tasks", {
   id: id(),

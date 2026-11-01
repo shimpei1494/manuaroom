@@ -34,8 +34,13 @@ async function applyMigrations(db: D1Database): Promise<void> {
 /** テストごとに全テーブルを空にする (外部キーの向きに合わせて子から消す)。 */
 export async function clearTables(db: D1Database): Promise<void> {
   await db.batch(
-    ["ai_suggestions", "maintenance_logs", "maintenance_tasks", "manuals", "products"].map((t) =>
-      db.prepare(`DELETE FROM ${t}`),
-    ),
+    [
+      "ai_suggestions",
+      "maintenance_logs",
+      "maintenance_tasks",
+      "manuals",
+      "product_links",
+      "products",
+    ].map((t) => db.prepare(`DELETE FROM ${t}`)),
   );
 }
