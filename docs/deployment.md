@@ -92,6 +92,16 @@ Cron は `wrangler.jsonc` の `triggers.crons`（`0 0 * * sat` = UTC の土曜 0
 
 トークンが未登録のときは送らずにログへ出すだけなので、LINE の準備より先にデプロイしても問題ない。送信結果は Workers & Pages → `manuaroom` → Logs で確認できる。
 
+## 8. スマホのホーム画面に追加する（PWA）
+
+`public/manifest.webmanifest` とアイコンがあるので、スマホのブラウザから「ホーム画面に追加」すると、アドレスバーのない全画面のアプリとして開ける。
+
+- **iPhone**: Safari でも Chrome でもよい（iOS 16.4 以降）。Safari は共有ボタン → 「ホーム画面に追加」、Chrome はアドレスバー右の共有ボタン → 「ホーム画面に追加」。どちらから追加しても、ホーム画面のアプリは同じ全画面アプリになり、ブラウザとは Cookie が別なので、**最初に開いたときにもう一度 Google でログインする**。
+- **Android**: Chrome のメニュー → 「ホーム画面に追加」（「アプリをインストール」と出ることもある）。
+- ログインのし直しを減らしたいときは、Zero Trust → Access → Applications → `manuaroom` → **Session Duration** を長め（例: 1 か月）にする。
+- ブラウザは manifest を Cookie なしで取りに行くため、そのままだと Access に止められる。`__root.tsx` の manifest のリンクに `crossorigin="use-credentials"` を付けて Access の Cookie を送らせている。
+- アイコンは `vp run icons`（`scripts/generate-pwa-icons.mjs`）で作り直せる。
+
 ## 家族を追加・削除するとき
 
 ログインを許可・禁止するには、次の 2 箇所を**両方**更新する。片方だけだと、意図せず全員通す/誰も通さない状態になる。

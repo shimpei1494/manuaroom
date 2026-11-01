@@ -65,11 +65,21 @@ export const Route = createRootRoute({
       { href: mantineDatesCss, rel: "stylesheet" },
       { href: mantineNotificationsCss, rel: "stylesheet" },
       { href: appCss, rel: "stylesheet" },
+      // PWA: ホーム画面に追加したときの名前・アイコン・全画面表示 (public/manifest.webmanifest)。
+      // ブラウザは manifest を Cookie なしで取りに行き Cloudflare Access に弾かれるので、
+      // use-credentials で Access の Cookie を付けさせる。
+      { href: "/manifest.webmanifest", rel: "manifest", crossOrigin: "use-credentials" },
+      { href: "/favicon.svg", rel: "icon", type: "image/svg+xml" },
+      { href: "/apple-touch-icon.png", rel: "apple-touch-icon" },
     ],
     meta: [
       { charSet: "utf8" },
       { content: "width=device-width, initial-scale=1, viewport-fit=cover", name: "viewport" },
       { content: "#22a77f", name: "theme-color" },
+      // iOS のホーム画面に追加したときの名前と、全画面表示の指定
+      { content: "Manuaroom", name: "apple-mobile-web-app-title" },
+      { content: "yes", name: "mobile-web-app-capable" },
+      { content: "default", name: "apple-mobile-web-app-status-bar-style" },
       { title: "Manuaroom" },
     ],
   }),
