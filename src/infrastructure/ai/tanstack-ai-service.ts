@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { AiServicePort } from "../../application/ports/ai-service-port";
 import { INTERVAL_UNIT_VALUES } from "../../domain/maintenance/maintenance-task";
 import { requireOpenAiApiKey, type RuntimeEnv } from "../env/runtime-env";
+import { toAiServiceError } from "./ai-error";
 
 // 解析・製品情報の読み取り・チャットとも同じモデル。変えるときは料金と PDF 入力対応を確かめる (ADR 0008)
 // @tanstack/ai-openai 1.0 のモデル定義では gpt-6-luna の入力に document がないが、
@@ -86,6 +87,23 @@ function pdfPart(pdf: ArrayBuffer, fileName: string) {
   };
 }
 
+/**
+ * PDF を渡す 1 回きりの呼び出しを包み、失敗したら原因を Workers Logs に残して日本語のエラーにする。
+ * 成功時も所要時間と PDF の大きさを残し、CPU やメモリの上限に近いかを見られるようにする。
+ */
+async function callWithPdf<T>(operation: string, pdf: ArrayBuffer, call: () => Promise<T>) {
+  const startedAt = Date.now();
+  const context = { operation, model: OPENAI_MODEL, pdfBytes: pdf.byteLength };
+  try {
+    const result = await call();
+    console.log("[ai] 成功", { ...context, elapsedMs: Date.now() - startedAt });
+    return result;
+  } catch (error) {
+    console.error("[ai] 失敗", { ...context, elapsedMs: Date.now() - startedAt }, error);
+    throw toAiServiceError(error);
+  }
+}
+
 export function createTanstackAiService(env: RuntimeEnv): AiServicePort {
   function adapter() {
     return createOpenaiChat(OPENAI_MODEL, requireOpenAiApiKey(env));
@@ -93,41 +111,48 @@ export function createTanstackAiService(env: RuntimeEnv): AiServicePort {
 
   return {
     async analyzeManualForMaintenance({ pdf, fileName }) {
-      const result = await chat({
-        adapter: adapter(),
-        // 1 回きりの呼び出しなので会話のまとまりは毎回新しく作る
-        threadId: crypto.randomUUID(),
-        systemPrompts: [EXTRACTION_SYSTEM_PROMPT],
-        messages: [
-          {
-            role: "user",
-            content: [
-              pdfPart(pdf, fileName),
-              { type: "text", content: "この説明書からメンテナンス・交換項目を抽出してください。" },
-            ],
-          },
-        ],
-        outputSchema: MaintenanceResponseSchema,
-      });
+      const result = await callWithPdf("analyzeManualForMaintenance", pdf, () =>
+        chat({
+          adapter: adapter(),
+          // 1 回きりの呼び出しなので会話のまとまりは毎回新しく作る
+          threadId: crypto.randomUUID(),
+          systemPrompts: [EXTRACTION_SYSTEM_PROMPT],
+          messages: [
+            {
+              role: "user",
+              content: [
+                pdfPart(pdf, fileName),
+                {
+                  type: "text",
+                  content: "この説明書からメンテナンス・交換項目を抽出してください。",
+                },
+              ],
+            },
+          ],
+          outputSchema: MaintenanceResponseSchema,
+        }),
+      );
       return result.maintenances;
     },
 
-    async extractProductInfo({ pdf, fileName }) {
-      return chat({
-        adapter: adapter(),
-        threadId: crypto.randomUUID(),
-        systemPrompts: [PRODUCT_INFO_SYSTEM_PROMPT],
-        messages: [
-          {
-            role: "user",
-            content: [
-              pdfPart(pdf, fileName),
-              { type: "text", content: "この説明書の製品情報を読み取ってください。" },
-            ],
-          },
-        ],
-        outputSchema: ProductInfoSchema,
-      });
+    extractProductInfo({ pdf, fileName }) {
+      return callWithPdf("extractProductInfo", pdf, () =>
+        chat({
+          adapter: adapter(),
+          threadId: crypto.randomUUID(),
+          systemPrompts: [PRODUCT_INFO_SYSTEM_PROMPT],
+          messages: [
+            {
+              role: "user",
+              content: [
+                pdfPart(pdf, fileName),
+                { type: "text", content: "この説明書の製品情報を読み取ってください。" },
+              ],
+            },
+          ],
+          outputSchema: ProductInfoSchema,
+        }),
+      );
     },
 
     answerAboutManual({ pdf, fileName, productName, threadId, messages }) {

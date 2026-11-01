@@ -86,6 +86,18 @@ describe("aiSuggestionRepository.replaceByManual", () => {
     expect(list.map((s) => s.id).sort()).toEqual(next.map((s) => s.id).sort());
   });
 
+  test("D1 の変数上限 (1 文 100 個) を超える件数でも保存できる", async () => {
+    const repo = createAiSuggestionRepository(db);
+    const { product, manual } = await seedManual();
+    const base = { userId: manual.userId, productId: product.id, manualId: manual.id };
+    const many = Array.from({ length: 30 }, () => makeAiSuggestion(base));
+
+    await repo.replaceByManual({ ...base, suggestions: many });
+
+    const list = await repo.listByManual({ userId: manual.userId, manualId: manual.id });
+    expect(list).toHaveLength(30);
+  });
+
   test("空の候補で置き換えると既存の候補がなくなる", async () => {
     const repo = createAiSuggestionRepository(db);
     const { product, manual } = await seedManual();
