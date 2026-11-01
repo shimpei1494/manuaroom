@@ -32,6 +32,20 @@ const csrfMiddleware = createCsrfMiddleware({
   filter: (ctx) => ctx.handlerType === "serverFn",
 });
 
+/**
+ * server function で投げられたエラーを Workers Logs (ダッシュボードの Observability) に残す。
+ * 画面には通知で message だけが出るので、スタックトレースや cause はここでしか追えない。
+ */
+const serverFnErrorLogger = createMiddleware({ type: "function" }).server(async ({ next }) => {
+  try {
+    return await next();
+  } catch (error) {
+    console.error("[serverFn] 失敗", error);
+    throw error;
+  }
+});
+
 export const startInstance = createStart(() => ({
   requestMiddleware: [csrfMiddleware, cloudflareAccessGuard],
+  functionMiddleware: [serverFnErrorLogger],
 }));

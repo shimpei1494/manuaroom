@@ -7,6 +7,19 @@ import { aiSuggestions } from "../schema";
 
 type Row = typeof aiSuggestions.$inferSelect;
 
+// D1 は 1 つの SQL 文に渡せる値 (バインド変数) が 100 個まで。1 行 8 列なので 12 行ずつ INSERT する
+const D1_MAX_BOUND_PARAMETERS = 100;
+const COLUMNS_PER_ROW = 8;
+const ROWS_PER_INSERT = Math.floor(D1_MAX_BOUND_PARAMETERS / COLUMNS_PER_ROW);
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
+
 function toRow(s: AiSuggestion) {
   return {
     id: s.id,
@@ -44,7 +57,10 @@ export function createAiSuggestionRepository(db: Db): AiSuggestionRepositoryPort
         await deleteExisting;
         return;
       }
-      await db.batch([deleteExisting, db.insert(aiSuggestions).values(suggestions.map(toRow))]);
+      const inserts = chunk(suggestions.map(toRow), ROWS_PER_INSERT).map((rows) =>
+        db.insert(aiSuggestions).values(rows),
+      );
+      await db.batch([deleteExisting, ...inserts]);
     },
     async findById({ userId, suggestionId }) {
       const rows = await db
