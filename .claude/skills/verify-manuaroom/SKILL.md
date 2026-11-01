@@ -52,7 +52,7 @@ node .claude/skills/verify-manuaroom/scripts/drive.mjs <journey>
 | `tasks`        | 製品登録 → タスク追加 → 今やることから完了 → 通知で元に戻す | [maintenance-tasks](features/maintenance-tasks.md) |
 | `skip-history` | スキップ → 回数表示 → 履歴から取り消し                      | [skip-history](features/skip-history.md)           |
 | `calendar`     | 完了 → カレンダーの今日の欄に「実施」                       | [calendar](features/calendar.md)                   |
-| `manual-ai`    | PDF アップロード → AI 解析 → 承認 → 質問 → 削除             | [manual-ai](features/manual-ai.md)                 |
+| `manual-ai`    | PDF アップロード → AI 解析 → 承認 → まとめて承認 → 質問 → 削除 | [manual-ai](features/manual-ai.md)                 |
 | `product-from-manual` | 新規登録画面で PDF を選ぶ → `PDF から登録` → 読み取った内容で製品ができる | [product-from-manual](features/product-from-manual.md) |
 
 - 安定した手がかりを使う: ARIA ロール + 画面の文言 (`getByRole("button", { name: "完了" })`, `getByLabel("製品名")`)。Mantine のクラスは通知 (`.mantine-Notification-root`) とカード (`.mantine-Card-root`) の絞り込みだけに使う。
@@ -76,7 +76,7 @@ node .claude/skills/verify-manuaroom/scripts/drive.mjs <journey>
 
   テーブルは `products`, `manuals`, `maintenance_tasks`, `maintenance_logs` (`kind`, `done_at`), `ai_suggestions`。説明書の PDF は R2 (`manuals/{user_id}/{product_id}/{manual_id}.pdf`)。
 - **AI がモックに届いたか見る。** `manual-ai` の後、`.wrangler/verify-run/mock.log` に `POST /v1/responses 解析` と `... チャット` が並ぶ。無いのに「解析完了」が出たら、モックに向いていない。操作を止めて cleanup.sh のあと launch.sh からやり直す。
-- モックの回答は固定 (`フィルター清掃` 2 週間ごと p.12、チャットは「（モック）…」)。**AI の回答の質は検証できない。** 見ているのは、画面から Worker・TanStack AI・SDK を通って結果が保存・表示されるところまで。
+- モックの回答は固定 (`フィルター清掃` 2 週間ごと p.12 ほか 3 件、チャットは「（モック）…」)。**AI の回答の質は検証できない。** 見ているのは、画面から Worker・TanStack AI・SDK を通って結果が保存・表示されるところまで。
 - 週次通知 (LINE) はこの skill の対象外。
 
 ## Cleanup

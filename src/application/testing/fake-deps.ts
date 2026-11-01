@@ -7,6 +7,7 @@ import type { ManualProductInfo } from "../../domain/product/product-from-manual
 import type { ProductLink } from "../../domain/product/product-link";
 import type { Deps } from "../deps";
 import type { AiServicePort } from "../ports/ai-service-port";
+import type { AiSuggestionAcceptancePort } from "../ports/ai-suggestion-acceptance-port";
 import type { AiSuggestionRepositoryPort } from "../ports/ai-suggestion-repository-port";
 import type { FileStoragePort } from "../ports/file-storage-port";
 import type { MaintenanceLedgerPort } from "../ports/maintenance-ledger-port";
@@ -45,6 +46,7 @@ export function createFakeDeps(options: FakeDepsOptions = {}): FakeDeps {
   const userId = options.userId ?? TEST_USER_ID;
   const sentNotifications: string[] = [];
   const maintenanceStore: MaintenanceStore = { tasks: new Map(), logs: [] };
+  const suggestionStore: SuggestionStore = { rows: [] };
   return {
     auth: { requireUserId: () => Promise.resolve(userId) },
     clock: { now: () => now },
@@ -58,7 +60,8 @@ export function createFakeDeps(options: FakeDepsOptions = {}): FakeDeps {
     maintenanceTaskRepository: createInMemoryMaintenanceTaskRepository(maintenanceStore),
     maintenanceLogRepository: createInMemoryMaintenanceLogRepository(maintenanceStore),
     maintenanceLedger: createInMemoryMaintenanceLedger(maintenanceStore),
-    aiSuggestionRepository: createInMemoryAiSuggestionRepository(),
+    aiSuggestionRepository: createInMemoryAiSuggestionRepository(suggestionStore),
+    aiSuggestionAcceptance: createInMemoryAiSuggestionAcceptance(suggestionStore, maintenanceStore),
     aiService: {
       analyzeManualForMaintenance: options.analyzeManual ?? (() => Promise.resolve([])),
       extractProductInfo:
@@ -415,27 +418,55 @@ function createInMemoryMaintenanceLedger({ tasks, logs }: MaintenanceStore): Mai
   };
 }
 
-function createInMemoryAiSuggestionRepository(): AiSuggestionRepositoryPort {
-  let rows: AiSuggestion[] = [];
+type SuggestionStore = { rows: AiSuggestion[] };
+
+function createInMemoryAiSuggestionRepository(store: SuggestionStore): AiSuggestionRepositoryPort {
   return {
     replaceByManual({ userId, manualId, suggestions }) {
-      rows = [
-        ...rows.filter((s) => !(s.userId === userId && s.manualId === manualId)),
+      store.rows = [
+        ...store.rows.filter((s) => !(s.userId === userId && s.manualId === manualId)),
         ...suggestions,
       ];
       return Promise.resolve();
     },
     findById({ userId, suggestionId }) {
       return Promise.resolve(
-        rows.find((s) => s.userId === userId && s.id === suggestionId) ?? null,
+        store.rows.find((s) => s.userId === userId && s.id === suggestionId) ?? null,
       );
     },
     listByManual({ userId, manualId }) {
-      return Promise.resolve(rows.filter((s) => s.userId === userId && s.manualId === manualId));
+      return Promise.resolve(
+        store.rows.filter((s) => s.userId === userId && s.manualId === manualId),
+      );
     },
     updateStatus({ userId, suggestionId, status }) {
-      rows = rows.map((s) => (s.userId === userId && s.id === suggestionId ? { ...s, status } : s));
+      store.rows = store.rows.map((s) =>
+        s.userId === userId && s.id === suggestionId ? { ...s, status } : s,
+      );
       return Promise.resolve();
+    },
+  };
+}
+
+/** 判定と書き込みの間に await を挟まない。実物の D1 の batch と同じく、途中に他の操作が入らない。 */
+function createInMemoryAiSuggestionAcceptance(
+  suggestions: SuggestionStore,
+  { tasks }: MaintenanceStore,
+): AiSuggestionAcceptancePort {
+  return {
+    accept({ userId, items }) {
+      const created: string[] = [];
+      for (const { suggestionId, task } of items) {
+        const index = suggestions.rows.findIndex(
+          (s) => s.userId === userId && s.id === suggestionId && s.status === "pending",
+        );
+        const target = suggestions.rows[index];
+        if (!target) continue;
+        suggestions.rows[index] = { ...target, status: "accepted" };
+        tasks.set(task.id, task);
+        created.push(task.id);
+      }
+      return Promise.resolve(created);
     },
   };
 }

@@ -1,4 +1,5 @@
 import type { AiServicePort } from "./ports/ai-service-port";
+import type { AiSuggestionAcceptancePort } from "./ports/ai-suggestion-acceptance-port";
 import type { AiSuggestionRepositoryPort } from "./ports/ai-suggestion-repository-port";
 import type { AuthPort } from "./ports/auth-port";
 import type { ClockPort } from "./ports/clock-port";
@@ -26,6 +27,7 @@ export type Deps = {
   maintenanceLogRepository: MaintenanceLogRepositoryPort;
   maintenanceLedger: MaintenanceLedgerPort;
   aiSuggestionRepository: AiSuggestionRepositoryPort;
+  aiSuggestionAcceptance: AiSuggestionAcceptancePort;
   aiService: AiServicePort;
   notifier: NotifierPort;
 };

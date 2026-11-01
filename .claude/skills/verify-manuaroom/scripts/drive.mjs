@@ -107,7 +107,7 @@ const journeys = {
     await shot(page, "calendar-1-today");
   },
 
-  // 説明書アップロード → AI 解析 (モック) → 候補を承認 → タスクになる → 説明書に質問 → 削除 (ADR 0008)
+  // 説明書アップロード → AI 解析 (モック) → 候補を 1 件ずつ承認 / まとめて承認 → タスクになる → 説明書に質問 → 削除 (ADR 0008)
   async "manual-ai"(page) {
     await createProduct(page);
     await page.locator('input[type="file"]').setInputFiles({
@@ -121,14 +121,28 @@ const journeys = {
     await shot(page, "manual-1-uploaded");
 
     await page.getByRole("button", { name: "AIで解析" }).click();
-    await expect(page.getByText("1 件の候補が抽出されました")).toBeVisible();
+    await expect(page.getByText("3 件の候補が抽出されました")).toBeVisible();
     await expect(page.getByText("フィルター清掃")).toBeVisible();
     await shot(page, "manual-2-analyzed");
 
-    await page.getByRole("button", { name: "承認" }).click();
+    // 1 件だけ承認する。候補の行の「承認」は先頭のもの (フィルター清掃)
+    await page.getByRole("button", { name: "承認", exact: true }).first().click();
     await expect(page.getByText("候補をメンテナンスタスクに登録しました")).toBeVisible();
     await expect(page.getByRole("row", { name: /フィルター清掃/ })).toBeVisible();
     await shot(page, "manual-3-accepted");
+
+    // 残りの 2 件をまとめて承認する。確認ダイアログに承認する候補が並ぶ
+    await page.getByRole("button", { name: "すべて承認 (2)" }).click();
+    const confirm = page.getByRole("dialog", { name: "候補をまとめて承認" });
+    await expect(confirm).toContainText("熱交換器の点検");
+    await expect(confirm).toContainText("リモコンの電池交換");
+    await shot(page, "manual-3b-accept-all-confirm");
+    await confirm.getByRole("button", { name: "2 件を承認" }).click();
+    await expect(page.getByText("2 件の候補をメンテナンスタスクに登録しました")).toBeVisible();
+    await expect(page.getByRole("row", { name: /熱交換器の点検/ })).toBeVisible();
+    await expect(page.getByRole("row", { name: /リモコンの電池交換/ })).toBeVisible();
+    await expect(page.getByText("未処理の候補はありません。")).toBeVisible();
+    await shot(page, "manual-3c-accepted-all");
 
     await page.getByRole("button", { name: "質問する" }).click();
     const drawer = page.getByRole("dialog", { name: /に質問/ });
