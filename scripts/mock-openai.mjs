@@ -23,7 +23,15 @@ const PRODUCT_INFO_RESULT = JSON.stringify({
   modelNumber: "MOCK-2026",
   category: "エアコン",
 });
-const CHAT_ANSWER = ["（モック）", "フィルターは", "2週間に1回", "掃除してください", " (p.12)"];
+// 本物の AI と同じく Markdown で答え、少しずつ (閉じていない ** を含む断片で) 届ける
+const CHAT_ANSWER = [
+  "（モック）フィルターは **2週間",
+  "に1回** 掃除してください (p.12)。\n\n",
+  "### 手順\n\n1. 運転を止めて",
+  "、電源プラグを抜く\n2. フィルターを外して",
+  "ほこりを吸い取る\n\n",
+  "- **よく乾かしてから** 戻す",
+];
 
 http
   .createServer((req, res) => {

@@ -33,10 +33,12 @@ import { ManualChatDrawer } from "./ManualChatDrawer";
 
 export function ManualCard({
   manual,
+  productName,
   suggestions,
   onPreview,
 }: {
   manual: Manual;
+  productName: string;
   suggestions: AiSuggestion[];
   onPreview: () => void;
 }) {
@@ -195,6 +197,7 @@ export function ManualCard({
       </Stack>
       <ManualChatDrawer
         manual={manual}
+        productName={productName}
         opened={chatOpened}
         onClose={() => {
           setChatOpened(false);
