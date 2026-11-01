@@ -8,6 +8,7 @@ import { listMaintenanceLogsInPeriod } from "../application/usecases/list-mainte
 import { listMaintenanceTasks } from "../application/usecases/list-maintenance-tasks";
 import { markMaintenanceDone } from "../application/usecases/mark-maintenance-done";
 import { skipMaintenance } from "../application/usecases/skip-maintenance";
+import { skipMaintenanceTasks } from "../application/usecases/skip-maintenance-tasks";
 import { undoMaintenanceLog } from "../application/usecases/undo-maintenance-log";
 import { updateMaintenanceTask } from "../application/usecases/update-maintenance-task";
 import { INTERVAL_UNIT_VALUES } from "../domain/maintenance/maintenance-task";
@@ -39,6 +40,13 @@ const MarkMaintenanceDoneInputSchema = z.object({
 const SkipMaintenanceInputSchema = z.object({
   taskId: z.string().min(1),
   memo: z.string().nullish(),
+});
+
+const SkipMaintenanceTasksInputSchema = z.object({
+  tasks: z
+    .array(z.object({ taskId: z.string().min(1), updatedAt: z.coerce.date() }))
+    .min(1)
+    .max(200),
 });
 
 const UpdateMaintenanceTaskInputSchema = z.object({
@@ -82,6 +90,12 @@ export const skipMaintenanceFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => SkipMaintenanceInputSchema.parse(data))
   .handler(async ({ data }) => {
     return skipMaintenance(getDeps(), data);
+  });
+
+export const skipMaintenanceTasksFn = createServerFn({ method: "POST" })
+  .validator((data: unknown) => SkipMaintenanceTasksInputSchema.parse(data))
+  .handler(async ({ data }) => {
+    return skipMaintenanceTasks(getDeps(), data);
   });
 
 export const updateMaintenanceTaskFn = createServerFn({ method: "POST" })

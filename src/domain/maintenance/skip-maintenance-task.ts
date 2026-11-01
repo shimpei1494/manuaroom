@@ -2,6 +2,13 @@ import { BusinessRuleError } from "../errors";
 import { calculateNextDueDate } from "./calculate-next-due-date";
 import type { MaintenanceTask } from "./maintenance-task";
 
+/** 次の周期があるタスクだけスキップできる (ADR 0006)。 */
+export function isSkippable(
+  task: Pick<MaintenanceTask, "intervalValue" | "intervalUnit">,
+): boolean {
+  return task.intervalValue !== null && task.intervalUnit !== null;
+}
+
 /**
  * タスクを skippedAt にスキップしたものとして、更新後のタスクを返す (ADR 0006)。
  * 次回予定日は「スキップした日 + interval」。最終実施日は変えない。

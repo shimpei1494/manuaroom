@@ -18,6 +18,7 @@ import {
   selectTasksToDoNow,
 } from "../domain/maintenance/classify-by-due-date";
 import type { Product } from "../domain/product/product";
+import { BulkSkipOverdueButton } from "../features/maintenance/BulkSkipOverdueButton";
 import { CompleteButton } from "../features/maintenance/CompleteButton";
 import { formatDate, formatDueLabel } from "../features/maintenance/format";
 import { SkipButton } from "../features/maintenance/SkipButton";
@@ -99,6 +100,7 @@ function HomePage() {
           </EmptyState>
         ) : (
           <Stack gap="sm" className="stagger">
+            <BulkSkipOverdueButton overdue={overdue} productMap={productMap} today={today} />
             {todo.map((task) => (
               <TodoCard
                 key={task.id}

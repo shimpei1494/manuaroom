@@ -13,6 +13,14 @@ export type MaintenanceLedgerPort = {
     readUpdatedAt: Date;
     log: MaintenanceLog;
   }): Promise<boolean>;
+  /**
+   * 複数のタスクについて appendLog をまとめて 1 トランザクションで行う (まとめてスキップ)。
+   * タスクごとに「読んだ時点から変わっていなければ書く」。変わっていたタスクは飛ばし、他は書く。
+   * 書けた記録の id を返す。
+   */
+  appendLogs(
+    entries: { task: MaintenanceTask; readUpdatedAt: Date; log: MaintenanceLog }[],
+  ): Promise<string[]>;
   /** 記録を削除し、task の次回予定日・最終実施日・更新日時を書く。 */
   revertLog(input: { task: MaintenanceTask; readUpdatedAt: Date; logId: string }): Promise<boolean>;
 };

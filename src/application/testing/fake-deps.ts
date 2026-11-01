@@ -410,6 +410,15 @@ function createInMemoryMaintenanceLedger({ tasks, logs }: MaintenanceStore): Mai
       if (written) logs.push(log);
       return Promise.resolve(written);
     },
+    appendLogs(entries) {
+      const writtenIds: string[] = [];
+      for (const { task, readUpdatedAt, log } of entries) {
+        if (!writeTaskIfUnchanged(task, readUpdatedAt)) continue;
+        logs.push(log);
+        writtenIds.push(log.id);
+      }
+      return Promise.resolve(writtenIds);
+    },
     revertLog({ task, readUpdatedAt, logId }) {
       const written = writeTaskIfUnchanged(task, readUpdatedAt);
       if (written) removeLogs(logs, (l) => l.userId === task.userId && l.id === logId);

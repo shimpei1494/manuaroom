@@ -2,7 +2,7 @@ import { describe, expect, test } from "vite-plus/test";
 
 import { BusinessRuleError } from "../errors";
 import type { MaintenanceTask } from "./maintenance-task";
-import { skipMaintenanceTask } from "./skip-maintenance-task";
+import { isSkippable, skipMaintenanceTask } from "./skip-maintenance-task";
 
 const now = new Date("2026-07-20T12:00:00Z");
 
@@ -51,5 +51,16 @@ describe("skipMaintenanceTask", () => {
     skipMaintenanceTask(baseTask, now, now);
 
     expect(baseTask.nextDueDate).toEqual(new Date("2026-07-10T00:00:00Z"));
+  });
+});
+
+describe("isSkippable", () => {
+  test("周期の値と単位がそろっていればスキップできる", () => {
+    expect(isSkippable(baseTask)).toBe(true);
+  });
+
+  test("周期の値か単位が欠けていればスキップできない", () => {
+    expect(isSkippable({ intervalValue: null, intervalUnit: "month" })).toBe(false);
+    expect(isSkippable({ intervalValue: 6, intervalUnit: null })).toBe(false);
   });
 });
