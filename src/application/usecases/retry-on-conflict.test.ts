@@ -23,6 +23,7 @@ function withConflicts(
   };
   return {
     appendLog: (input) => (remaining > 0 ? conflict() : ledger.appendLog(input)),
+    appendLogs: (entries) => ledger.appendLogs(entries),
     revertLog: (input) => (remaining > 0 ? conflict() : ledger.revertLog(input)),
   };
 }

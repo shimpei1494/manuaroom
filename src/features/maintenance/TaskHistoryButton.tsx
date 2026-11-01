@@ -76,7 +76,9 @@ export function TaskHistoryButton({ task }: { task: MaintenanceTask }) {
                       <Text size="sm">{log.memo ?? ""}</Text>
                     </Table.Td>
                     <Table.Td>
-                      {log.canUndo && <UndoLogButton logId={log.id} onUndone={() => void load()} />}
+                      {log.canUndo && (
+                        <UndoLogButton logIds={[log.id]} onUndone={() => void load()} />
+                      )}
                     </Table.Td>
                   </Table.Tr>
                 ))}

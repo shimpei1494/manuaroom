@@ -3,8 +3,8 @@ import { notifications } from "@mantine/notifications";
 
 import { UndoLogButton } from "./UndoLogButton";
 
-/** 完了・スキップを記録したことを知らせ、その場で取り消せるようにする。 */
-export function showRecordedNotification(message: string, logId: string) {
+/** 完了・スキップを記録したことを知らせ、その場で取り消せるようにする (まとめてスキップは複数の記録)。 */
+export function showRecordedNotification(message: string, logIds: string | readonly string[]) {
   const id = notifications.show({
     color: "green",
     autoClose: 8000,
@@ -12,7 +12,7 @@ export function showRecordedNotification(message: string, logId: string) {
       <Group justify="space-between" wrap="nowrap">
         <Text size="sm">{message}</Text>
         <UndoLogButton
-          logId={logId}
+          logIds={typeof logIds === "string" ? [logIds] : logIds}
           onUndone={() => {
             notifications.hide(id);
           }}

@@ -1,6 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 
 import type { MaintenanceLedgerPort } from "../../../application/ports/maintenance-ledger-port";
+import type { MaintenanceLog } from "../../../domain/maintenance/maintenance-log";
 import type { MaintenanceTask } from "../../../domain/maintenance/maintenance-task";
 import type { Db } from "../client";
 import { maintenanceLogs, maintenanceTasks } from "../schema";
@@ -40,27 +41,44 @@ export function createMaintenanceLedger(db: Db): MaintenanceLedgerPort {
     const { sql: text, params } = query.toSQL();
     return d1.prepare(text).bind(...params);
   };
+  const insertLogIfTaskUpdated = (log: MaintenanceLog) => {
+    const { previousTaskState: previous } = log;
+    return d1
+      .prepare(INSERT_LOG_IF_TASK_UPDATED)
+      .bind(
+        log.id,
+        log.userId,
+        log.taskId,
+        log.kind,
+        log.doneAt.getTime(),
+        log.memo,
+        previous === null ? 0 : 1,
+        previous?.nextDueDate?.getTime() ?? null,
+        previous?.lastDoneAt?.getTime() ?? null,
+        log.createdAt.getTime(),
+      );
+  };
   return {
     async appendLog({ task, readUpdatedAt, log }) {
-      const { previousTaskState: previous } = log;
       const [updated] = await d1.batch([
         statementOf(updateTaskIfUnchanged(db, task, readUpdatedAt)),
-        d1
-          .prepare(INSERT_LOG_IF_TASK_UPDATED)
-          .bind(
-            log.id,
-            log.userId,
-            log.taskId,
-            log.kind,
-            log.doneAt.getTime(),
-            log.memo,
-            previous === null ? 0 : 1,
-            previous?.nextDueDate?.getTime() ?? null,
-            previous?.lastDoneAt?.getTime() ?? null,
-            log.createdAt.getTime(),
-          ),
+        insertLogIfTaskUpdated(log),
       ]);
       return (updated?.meta.changes ?? 0) > 0;
+    },
+    async appendLogs(entries) {
+      if (entries.length === 0) return [];
+      // タスクの更新と記録の追加を 1 組ずつ並べる。changes() は直前の更新の件数を見るので、組ごとに判定できる。
+      // 1 文あたりのパラメータは最大 10 個で、D1 の上限 (100) には届かない。
+      const results = await d1.batch(
+        entries.flatMap(({ task, readUpdatedAt, log }) => [
+          statementOf(updateTaskIfUnchanged(db, task, readUpdatedAt)),
+          insertLogIfTaskUpdated(log),
+        ]),
+      );
+      return entries
+        .filter((_, i) => (results[i * 2]?.meta.changes ?? 0) > 0)
+        .map(({ log }) => log.id);
     },
     async revertLog({ task, readUpdatedAt, logId }) {
       const [updated] = await d1.batch([

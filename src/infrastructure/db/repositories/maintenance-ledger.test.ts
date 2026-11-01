@@ -135,6 +135,45 @@ describe("maintenanceLedger.appendLog", () => {
   });
 });
 
+describe("maintenanceLedger.appendLogs", () => {
+  test("読んだ時点から変わったタスクだけ飛ばし、残りは記録を足してタスクを更新する", async () => {
+    const ledger = createMaintenanceLedger(db);
+    const first = await seedTask();
+    const changed = await seedTask();
+    const third = await seedTask();
+    // changed は読んだあとに別の操作で更新された
+    await ledger.appendLog({
+      task: { ...changed, nextDueDate: AFTER, updatedAt: AFTER },
+      readUpdatedAt: READ_AT,
+      log: makeLog(changed),
+    });
+    const skipped = new Date("2026-08-20T00:00:00Z");
+    const entries = [first, changed, third].map((task) => ({
+      task: { ...task, nextDueDate: skipped, updatedAt: AFTER },
+      readUpdatedAt: READ_AT,
+      log: { ...makeLog(task), kind: "skipped" as const },
+    }));
+
+    const writtenIds = await ledger.appendLogs(entries);
+
+    expect(writtenIds).toEqual([entries[0]?.log.id, entries[2]?.log.id]);
+    const taskRepo = createMaintenanceTaskRepository(db);
+    const logRepo = createMaintenanceLogRepository(db);
+    for (const task of [first, third]) {
+      expect(
+        (await taskRepo.findById({ userId: task.userId, taskId: task.id }))?.nextDueDate,
+      ).toEqual(skipped);
+      expect(await logRepo.listByTask({ userId: task.userId, taskId: task.id })).toHaveLength(1);
+    }
+    expect(
+      (await taskRepo.findById({ userId: changed.userId, taskId: changed.id }))?.nextDueDate,
+    ).toEqual(AFTER);
+    expect(
+      await logRepo.findById({ userId: changed.userId, logId: entries[1]?.log.id ?? "" }),
+    ).toBeNull();
+  });
+});
+
 describe("maintenanceLedger.revertLog", () => {
   test("読んだ時点から変わっていなければ、記録を消してタスクを更新する", async () => {
     const task = await seedTask();

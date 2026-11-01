@@ -84,3 +84,56 @@ test("カレンダーで今日の実施記録と予定が見られる", async ({
   const detail = page.locator(".mantine-Card-root", { hasText: productName });
   await expect(detail).toContainText("実施");
 });
+
+/** 今日から days 日前の日付 (日本時間) を、日付入力の書式で返す。 */
+function daysAgo(days: number): string {
+  const date = new Date(Date.now() + 9 * 60 * 60 * 1000 - days * 24 * 60 * 60 * 1000);
+  return date.toISOString().slice(0, 10).replaceAll("-", "/");
+}
+
+async function addOverdueTask(
+  page: Page,
+  title: string,
+  intervalDays: number,
+  overdueDays: number,
+) {
+  await page.getByRole("button", { name: "タスクを追加" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("タスク名").fill(title);
+  await dialog.getByLabel("周期").fill(intervalDays.toString());
+  await dialog.getByLabel("単位").click();
+  await page.getByRole("option", { name: "日", exact: true }).click();
+  await dialog.getByLabel("初回予定日").fill(daysAgo(overdueDays));
+  await dialog.getByLabel("タスク名").click();
+  await dialog.getByRole("button", { name: "追加" }).click();
+  await expect(page.getByText("タスクを追加しました").first()).toBeVisible();
+}
+
+test("期限切れのタスクを今やることからまとめてスキップし、通知から元に戻せる", async ({ page }) => {
+  const productName = `E2E 製品 ${crypto.randomUUID().slice(0, 8)}`;
+  await open(page, "/products/new");
+  await page.getByLabel("製品名").fill(productName);
+  await page.getByLabel("製品名").press("Enter");
+  await page.getByRole("link", { name: productName }).first().click();
+  await expect(page.getByRole("heading", { name: productName })).toBeVisible();
+  await addOverdueTask(page, "フィルター掃除", 30, 3);
+  await addOverdueTask(page, "排水口の掃除", 5, 10);
+
+  await open(page, "/");
+  await expect(todoCard(page, productName)).toHaveCount(2);
+  await page.getByRole("button", { name: /期限切れをまとめてスキップ/ }).click();
+  const confirm = page.getByRole("dialog", { name: "期限切れをまとめてスキップ" });
+  await expect(confirm.getByLabel(`${productName} フィルター掃除`)).toBeChecked();
+  await expect(confirm.getByLabel(`${productName} 排水口の掃除`)).toBeChecked();
+  await confirm.getByRole("button", { name: /件をスキップする/ }).click();
+
+  const notice = page.locator(".mantine-Notification-root", { hasText: "件をスキップしました" });
+  await expect(notice).toBeVisible();
+  // 次回は今日 + 周期。フィルター掃除 (30 日) は今やることから消え、排水口の掃除 (5 日) は残る
+  await expect(todoCard(page, productName)).toHaveCount(1);
+  await expect(todoCard(page, productName)).toContainText("排水口の掃除");
+
+  await notice.getByRole("button", { name: "元に戻す" }).click();
+  await expect(page.getByText("取り消しました")).toBeVisible();
+  await expect(todoCard(page, productName)).toHaveCount(2);
+});
