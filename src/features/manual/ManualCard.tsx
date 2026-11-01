@@ -14,6 +14,7 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import {
   IconChecks,
+  IconExternalLink,
   IconEye,
   IconFileTypePdf,
   IconMessageChatbot,
@@ -35,6 +36,7 @@ import { analyzeManualFn, deleteManualFn } from "../../server-functions/manuals"
 import { formatDate, formatInterval } from "../maintenance/format";
 import { errorMessage } from "../shared/form";
 import { ManualChatDrawer } from "./ManualChatDrawer";
+import { manualFileUrl, usePdfOpensInNewTab } from "./pdf-preview";
 
 export function ManualCard({
   manual,
@@ -53,6 +55,8 @@ export function ManualCard({
   const [analyzing, setAnalyzing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [chatOpened, setChatOpened] = useState(false);
+  const openInNewTab = usePdfOpensInNewTab();
+  const fileUrl = manualFileUrl(manual.id);
 
   const pending = suggestions.filter((s) => s.status === "pending");
   const accepted = suggestions.filter((s) => s.status === "accepted");
@@ -128,9 +132,15 @@ export function ManualCard({
               <IconFileTypePdf size={26} stroke={1.6} />
             </ThemeIcon>
             <Stack gap={2} style={{ minWidth: 0 }}>
-              <Anchor component="button" type="button" onClick={onPreview} fw={600} ta="left">
-                {manual.fileName}
-              </Anchor>
+              {openInNewTab ? (
+                <Anchor href={fileUrl} target="_blank" rel="noopener" fw={600}>
+                  {manual.fileName}
+                </Anchor>
+              ) : (
+                <Anchor component="button" type="button" onClick={onPreview} fw={600} ta="left">
+                  {manual.fileName}
+                </Anchor>
+              )}
               <Group gap={6}>
                 <Text size="xs" c="dimmed">
                   {formatFileSize(manual.fileSize)} · 登録日 {formatDate(manual.createdAt)}
@@ -140,14 +150,28 @@ export function ManualCard({
             </Stack>
           </Group>
           <Group gap="xs">
-            <Button
-              size="xs"
-              variant="default"
-              onClick={onPreview}
-              leftSection={<IconEye size={14} />}
-            >
-              プレビュー
-            </Button>
+            {openInNewTab ? (
+              <Button
+                component="a"
+                href={fileUrl}
+                target="_blank"
+                rel="noopener"
+                size="xs"
+                variant="default"
+                leftSection={<IconExternalLink size={14} />}
+              >
+                PDF を開く
+              </Button>
+            ) : (
+              <Button
+                size="xs"
+                variant="default"
+                onClick={onPreview}
+                leftSection={<IconEye size={14} />}
+              >
+                プレビュー
+              </Button>
+            )}
             <Tooltip label="AI でメンテナンス候補を抽出します">
               <Button
                 size="xs"
