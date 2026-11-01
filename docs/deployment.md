@@ -96,7 +96,7 @@ Cron は `wrangler.jsonc` の `triggers.crons`（`0 0 * * sat` = UTC の土曜 0
 
 `public/manifest.webmanifest` とアイコンがあるので、スマホのブラウザから「ホーム画面に追加」すると、アドレスバーのない全画面のアプリとして開ける。
 
-- **iPhone**: Safari で開き、共有ボタン → 「ホーム画面に追加」。ホーム画面のアプリは Safari と Cookie が別なので、**最初に開いたときにもう一度 Google でログインする**。
+- **iPhone**: Safari でも Chrome でもよい（iOS 16.4 以降）。Safari は共有ボタン → 「ホーム画面に追加」、Chrome はアドレスバー右の共有ボタン → 「ホーム画面に追加」。どちらから追加しても、ホーム画面のアプリは同じ全画面アプリになり、ブラウザとは Cookie が別なので、**最初に開いたときにもう一度 Google でログインする**。
 - **Android**: Chrome のメニュー → 「ホーム画面に追加」（「アプリをインストール」と出ることもある）。
 - ログインのし直しを減らしたいときは、Zero Trust → Access → Applications → `manuaroom` → **Session Duration** を長め（例: 1 か月）にする。
 - ブラウザは manifest を Cookie なしで取りに行くため、そのままだと Access に止められる。`__root.tsx` の manifest のリンクに `crossorigin="use-credentials"` を付けて Access の Cookie を送らせている。
