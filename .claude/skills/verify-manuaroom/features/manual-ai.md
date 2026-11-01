@@ -11,7 +11,7 @@
 - `suggestion-reject` 候補の `却下` で候補を捨てる (journey では未確認)。
 - `manual-chat` `質問する` のドロワーで質問し、回答がストリーミングで出る。
 - `manual-delete` 説明書を確認ダイアログ経由で削除する。
-- `manual-preview` PC は `プレビュー` でモーダルの iframe に PDF を出す (`新しいタブで開く` もある)。スマホ・タブレット幅では `PDF を開く` リンクで新しいタブに開く (journey では未確認。`e2e/manual-preview.spec.ts` が両方を確かめる)。
+- `manual-preview` PC は `プレビュー` でモーダルの iframe に PDF を出す (`新しいタブで開く` もある)。スマホ・タブレット幅では `PDF を開く` でアプリ内のビューア (`/manuals/<id>`、pdf.js で全ページを描画、`戻る` 付き) に移る (journey では未確認。`e2e/manual-preview.spec.ts` が両方を確かめる)。
 
 ## How to get to it (user POV)
 

@@ -42,7 +42,7 @@ manuals/{user_id}/{product_id}/{manual_id}.pdf
 ```
 
 - DB の `manuals` テーブルには、このキーと元のファイル名・サイズだけを保存する。PDF 本体は DB に入れない。
-- 画面でのプレビューは `/api/manuals/{manual_id}/file` から配信される (`Content-Disposition: inline`)。PC はモーダルの iframe で表示し、スマホ・タブレット (`max-width: 48em` か `pointer: coarse`) は iframe だと 1 ページ目しか出ない・表示できないため新しいタブで開く。Content-Type はアップロード時に R2 のメタデータとして保存したものを返す。
+- 画面でのプレビューは `/api/manuals/{manual_id}/file` から配信される (`Content-Disposition: inline`)。PC はモーダルの iframe で表示する。スマホ・タブレット (`max-width: 48em` か `pointer: coarse`) は iframe だと 1 ページ目しか出ない・表示できず、ホーム画面の PWA で PDF を直接開くと戻れなくなる (iOS)。そのためアプリ内のビューア `/manuals/{manual_id}` で pdf.js (legacy 版、ブラウザでだけ読み込む) を使って描画する。Content-Type はアップロード時に R2 のメタデータとして保存したものを返す。
 - 説明書を削除すると、DB の行を消したあとにファイルも消える。製品を削除した場合も、紐づく PDF がまとめて消える。
 - アップロードできるのは PDF のみ、20MB まで。
 

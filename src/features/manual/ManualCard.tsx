@@ -14,14 +14,13 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import {
   IconChecks,
-  IconExternalLink,
   IconEye,
   IconFileTypePdf,
   IconMessageChatbot,
   IconSparkles,
   IconTrash,
 } from "@tabler/icons-react";
-import { useRouter } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
@@ -36,7 +35,7 @@ import { analyzeManualFn, deleteManualFn } from "../../server-functions/manuals"
 import { formatDate, formatInterval } from "../maintenance/format";
 import { errorMessage } from "../shared/form";
 import { ManualChatDrawer } from "./ManualChatDrawer";
-import { manualFileUrl, usePdfOpensInNewTab } from "./pdf-preview";
+import { useUsesPdfViewerPage } from "./pdf-preview";
 
 export function ManualCard({
   manual,
@@ -55,8 +54,15 @@ export function ManualCard({
   const [analyzing, setAnalyzing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [chatOpened, setChatOpened] = useState(false);
-  const openInNewTab = usePdfOpensInNewTab();
-  const fileUrl = manualFileUrl(manual.id);
+  const openViewerPage = useUsesPdfViewerPage();
+  const viewerLink = (props: Record<string, unknown>) => (
+    <Link
+      {...props}
+      to="/manuals/$manualId"
+      params={{ manualId: manual.id }}
+      search={{ name: manual.fileName, productId: manual.productId }}
+    />
+  );
 
   const pending = suggestions.filter((s) => s.status === "pending");
   const accepted = suggestions.filter((s) => s.status === "accepted");
@@ -132,8 +138,8 @@ export function ManualCard({
               <IconFileTypePdf size={26} stroke={1.6} />
             </ThemeIcon>
             <Stack gap={2} style={{ minWidth: 0 }}>
-              {openInNewTab ? (
-                <Anchor href={fileUrl} target="_blank" rel="noopener" fw={600}>
+              {openViewerPage ? (
+                <Anchor renderRoot={viewerLink} fw={600}>
                   {manual.fileName}
                 </Anchor>
               ) : (
@@ -150,15 +156,12 @@ export function ManualCard({
             </Stack>
           </Group>
           <Group gap="xs">
-            {openInNewTab ? (
+            {openViewerPage ? (
               <Button
-                component="a"
-                href={fileUrl}
-                target="_blank"
-                rel="noopener"
+                renderRoot={viewerLink}
                 size="xs"
                 variant="default"
-                leftSection={<IconExternalLink size={14} />}
+                leftSection={<IconEye size={14} />}
               >
                 PDF を開く
               </Button>
