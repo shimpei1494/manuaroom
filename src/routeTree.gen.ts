@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as MaintenanceRouteImport } from './routes/maintenance'
+import { Route as ManualsManualIdRouteImport } from './routes/manuals/$manualId'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
 import { Route as ProductsProductIdRouteImport } from './routes/products/$productId'
 import { Route as ProductsNewRouteImport } from './routes/products/new'
@@ -31,6 +32,11 @@ const CalendarRoute = CalendarRouteImport.update({
 const MaintenanceRoute = MaintenanceRouteImport.update({
   id: '/maintenance',
   path: '/maintenance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManualsManualIdRoute = ManualsManualIdRouteImport.update({
+  id: '/manuals/$manualId',
+  path: '/manuals/$manualId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/maintenance': typeof MaintenanceRoute
+  '/manuals/$manualId': typeof ManualsManualIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/new': typeof ProductsNewRoute
   '/products/': typeof ProductsIndexRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/maintenance': typeof MaintenanceRoute
+  '/manuals/$manualId': typeof ManualsManualIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/new': typeof ProductsNewRoute
   '/products': typeof ProductsIndexRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/maintenance': typeof MaintenanceRoute
+  '/manuals/$manualId': typeof ManualsManualIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/new': typeof ProductsNewRoute
   '/products/': typeof ProductsIndexRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/calendar'
     | '/maintenance'
+    | '/manuals/$manualId'
     | '/products/$productId'
     | '/products/new'
     | '/products/'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/calendar'
     | '/maintenance'
+    | '/manuals/$manualId'
     | '/products/$productId'
     | '/products/new'
     | '/products'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/calendar'
     | '/maintenance'
+    | '/manuals/$manualId'
     | '/products/$productId'
     | '/products/new'
     | '/products/'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CalendarRoute: typeof CalendarRoute
   MaintenanceRoute: typeof MaintenanceRoute
+  ManualsManualIdRoute: typeof ManualsManualIdRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   ProductsNewRoute: typeof ProductsNewRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/maintenance'
       fullPath: '/maintenance'
       preLoaderRoute: typeof MaintenanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manuals/$manualId': {
+      id: '/manuals/$manualId'
+      path: '/manuals/$manualId'
+      fullPath: '/manuals/$manualId'
+      preLoaderRoute: typeof ManualsManualIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/': {
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CalendarRoute: CalendarRoute,
   MaintenanceRoute: MaintenanceRoute,
+  ManualsManualIdRoute: ManualsManualIdRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
   ProductsNewRoute: ProductsNewRoute,
   ProductsIndexRoute: ProductsIndexRoute,

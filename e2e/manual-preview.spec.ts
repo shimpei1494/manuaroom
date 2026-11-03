@@ -1,12 +1,14 @@
 import { expect, test } from "@playwright/test";
 
-// 説明書の PDF の開き方を確かめる。PC はモーダルの iframe でプレビューし、スマホは新しいタブで開く。
-// iOS Safari は iframe 内の PDF を 1 ページ目しか描画せず、Android Chrome は iframe 内で PDF を表示できないため。
+// 説明書の PDF の開き方を確かめる。PC はモーダルの iframe でプレビューし、スマホはアプリ内のビューアで開く。
+// iOS Safari は iframe 内の PDF を 1 ページ目しか描画せず、Android Chrome は iframe 内で PDF を表示できない。
+// 別タブで開くとホーム画面の PWA から戻れなくなるので、pdf.js で描いて「戻る」を出す。
 
 const MINIMAL_PDF = `%PDF-1.4
 1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj
-2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj
+2 0 obj<</Type/Pages/Kids[3 0 R 4 0 R]/Count 2>>endobj
 3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj
+4 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 300]>>endobj
 trailer<</Root 1 0 R>>
 %%EOF`;
 
@@ -28,16 +30,27 @@ test("説明書の PDF を開ける", async ({ page, isMobile }) => {
   await expect(page.getByText("説明書をアップロードしました")).toBeVisible();
 
   if (isMobile) {
-    const open = page.getByRole("link", { name: "PDF を開く" });
-    const href = await open.getAttribute("href");
-    expect(href).toMatch(/^\/api\/manuals\/[^/]+\/file$/);
-    await expect(open).toHaveAttribute("target", "_blank");
     await expect(page.getByRole("button", { name: "プレビュー" })).toHaveCount(0);
+    await page.getByRole("link", { name: "PDF を開く" }).click();
+    await expect(page).toHaveURL(/\/manuals\/[^/?]+\?/);
+    await expect(page.getByRole("heading", { name: "manual.pdf" })).toBeVisible();
+    await expect(page.getByText("全 2 ページ")).toBeVisible();
+    // 2 ページとも canvas に描かれる (幅が付く)
+    for (const label of ["1 ページ目", "2 ページ目"]) {
+      const canvas = page.getByLabel(label);
+      await canvas.scrollIntoViewIfNeeded();
+      await expect
+        .poll(() => canvas.evaluate((c: HTMLCanvasElement) => c.width))
+        .toBeGreaterThan(0);
+    }
+    // ブラウザ (PWA ではない) では別タブで開くリンクもある
+    await expect(page.getByRole("link", { name: "新しいタブで開く" })).toHaveAttribute(
+      "target",
+      "_blank",
+    );
 
-    const res = await page.request.get(href ?? "");
-    expect(res.status()).toBe(200);
-    expect(res.headers()["content-type"]).toBe("application/pdf");
-    expect(res.headers()["content-disposition"]).toMatch(/^inline;/);
+    await page.getByRole("button", { name: "戻る" }).click();
+    await expect(page.getByRole("heading", { name: productName })).toBeVisible();
   } else {
     await page.getByRole("button", { name: "プレビュー" }).click();
     const dialog = page.getByRole("dialog");

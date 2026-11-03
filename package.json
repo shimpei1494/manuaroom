@@ -38,6 +38,7 @@
     "dayjs": "^1.11.23",
     "drizzle-orm": "^0.45.4",
     "jose": "^6.2.14",
+    "pdfjs-dist": "^6.4.299",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-markdown": "^10.1.0",
