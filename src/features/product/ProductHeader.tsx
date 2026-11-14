@@ -9,7 +9,7 @@ import {
   Textarea,
   Title,
 } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
+import type { DateValue } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
@@ -23,6 +23,7 @@ import type { Product } from "../../domain/product/product";
 import { deleteProductFn, updateProductFn } from "../../server-functions/products";
 import { emptyToNull, errorMessage } from "../shared/form";
 import { ProductAvatar } from "./ProductAvatar";
+import { PurchaseWarrantyFields } from "./PurchaseWarrantyFields";
 
 export function ProductHeader({ product }: { product: Product }) {
   const router = useRouter();
@@ -116,8 +117,8 @@ type EditFormValues = {
   modelNumber: string;
   category: string;
   location: string;
-  purchaseDate: Date | null;
-  warrantyUntil: Date | null;
+  purchaseDate: DateValue;
+  warrantyUntil: DateValue;
   memo: string;
 };
 
@@ -171,17 +172,12 @@ function EditProductForm({ product, onSaved }: { product: Product; onSaved: () =
         <TextInput label="型番" {...form.getInputProps("modelNumber")} />
         <TextInput label="カテゴリ" {...form.getInputProps("category")} />
         <TextInput label="設置場所" {...form.getInputProps("location")} />
-        <DateInput
-          clearable
-          label="購入日"
-          valueFormat="YYYY/MM/DD"
-          {...form.getInputProps("purchaseDate")}
-        />
-        <DateInput
-          clearable
-          label="保証期限"
-          valueFormat="YYYY/MM/DD"
-          {...form.getInputProps("warrantyUntil")}
+        <PurchaseWarrantyFields
+          cols={1}
+          values={form.values}
+          onChange={(next) => {
+            form.setValues(next);
+          }}
         />
         <Textarea label="メモ" autosize minRows={2} {...form.getInputProps("memo")} />
         <Group justify="flex-end">
