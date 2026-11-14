@@ -11,6 +11,21 @@ export function formatWarrantyPeriod(months: number): string {
   return months % 12 === 0 ? `${(months / 12).toString()}年` : `${months.toString()}か月`;
 }
 
+const jstDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/**
+ * 日本時間での日付を、DateInput が扱う "YYYY-MM-DD" で返す。
+ * 購入日のカレンダーを開いたときに今日の月から出すのに使う (家族は日本にいる)。
+ */
+export function jstDateValue(now: Date): string {
+  return jstDateFormatter.format(now);
+}
+
 /** DateInput の値 ("YYYY-MM-DD" か Date) を Date にする。 */
 export function dateValueToDate(value: DateValue | undefined): Date | null {
   if (value === null || value === undefined || value === "") return null;

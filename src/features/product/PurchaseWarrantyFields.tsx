@@ -2,10 +2,12 @@ import { Chip, Group, SimpleGrid, Stack, Text } from "@mantine/core";
 import { DateInput, type DateValue } from "@mantine/dates";
 
 import { findWarrantyPeriod } from "../../domain/product/warranty-period";
+import { useToday } from "../shared/use-today";
 import {
   WARRANTY_PERIOD_PRESETS,
   dateValueToDate,
   formatWarrantyPeriod,
+  jstDateValue,
   warrantyUntilValue,
 } from "./warranty-presets";
 
@@ -17,6 +19,7 @@ export type PurchaseWarrantyValues = {
 /**
  * 購入日と保証期限の入力欄。購入日があれば「1年」などの期間を選ぶだけで保証期限が入る。
  * 期間で入れたあとに購入日を直したら、保証期限も同じ期間でずらす。
+ * 購入日のカレンダーは、空なら今日 (日本時間) の月で開き、今日に印を付ける。
  */
 export function PurchaseWarrantyFields({
   values,
@@ -27,6 +30,7 @@ export function PurchaseWarrantyFields({
   onChange: (next: PurchaseWarrantyValues) => void;
   cols?: 1 | 2;
 }) {
+  const today = jstDateValue(useToday());
   const purchase = dateValueToDate(values.purchaseDate);
   const selectedPeriod = findWarrantyPeriod(
     purchase,
@@ -56,6 +60,10 @@ export function PurchaseWarrantyFields({
           clearable
           label="購入日"
           valueFormat="YYYY/MM/DD"
+          // 購入日は今日か今日に近い日が多いので、空のときは今日の月から開いて今日を目立たせる。
+          // 値は選ぶまで空のまま (購入日は任意)。
+          defaultDate={today}
+          highlightToday
           value={values.purchaseDate}
           onChange={changePurchaseDate}
         />
