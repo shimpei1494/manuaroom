@@ -139,11 +139,18 @@ export function ManualCard({
             </ThemeIcon>
             <Stack gap={2} style={{ minWidth: 0 }}>
               {openViewerPage ? (
-                <Anchor renderRoot={viewerLink} fw={600}>
+                <Anchor renderRoot={viewerLink} fw={600} style={{ alignSelf: "flex-start" }}>
                   {manual.fileName}
                 </Anchor>
               ) : (
-                <Anchor component="button" type="button" onClick={onPreview} fw={600} ta="left">
+                <Anchor
+                  component="button"
+                  type="button"
+                  onClick={onPreview}
+                  fw={600}
+                  ta="left"
+                  style={{ alignSelf: "flex-start" }}
+                >
                   {manual.fileName}
                 </Anchor>
               )}

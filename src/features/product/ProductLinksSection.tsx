@@ -143,7 +143,7 @@ function LinkRow({ link, onEdit }: { link: ProductLink; onEdit: () => void }) {
             target="_blank"
             rel="noopener noreferrer"
             fw={600}
-            style={{ overflowWrap: "anywhere" }}
+            style={{ overflowWrap: "anywhere", alignSelf: "flex-start" }}
           >
             {link.title}
             <IconExternalLink

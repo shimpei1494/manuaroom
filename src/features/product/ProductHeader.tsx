@@ -64,8 +64,9 @@ export function ProductHeader({ product }: { product: Product }) {
 
   return (
     <Stack gap="sm">
-      <Anchor component={Link} to="/products" size="sm">
-        <Group gap={4}>
+      {/* Stack の子は横いっぱいに伸びるので、文字の部分だけ押せるように縮める */}
+      <Anchor component={Link} to="/products" size="sm" style={{ alignSelf: "flex-start" }}>
+        <Group gap={4} wrap="nowrap">
           <IconArrowLeft size={16} />
           製品一覧へ
         </Group>
