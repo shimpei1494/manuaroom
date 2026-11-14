@@ -17,4 +17,9 @@ export type AiSuggestionRepositoryPort = {
     suggestionId: string;
     status: AiSuggestionStatus;
   }): Promise<void>;
+  /**
+   * 説明書の未判断 (pending) の候補をすべて却下済みにする。判断済みの候補には触らない。
+   * 1 つの UPDATE 文で行うので、途中で他の操作が割り込まない。却下した件数を返す。
+   */
+  rejectPendingByManual(input: { userId: string; manualId: string }): Promise<number>;
 };

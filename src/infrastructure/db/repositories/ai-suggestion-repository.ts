@@ -85,5 +85,19 @@ export function createAiSuggestionRepository(db: Db): AiSuggestionRepositoryPort
         .set({ status })
         .where(and(eq(aiSuggestions.userId, userId), eq(aiSuggestions.id, suggestionId)));
     },
+    async rejectPendingByManual({ userId, manualId }) {
+      const rows = await db
+        .update(aiSuggestions)
+        .set({ status: "rejected" })
+        .where(
+          and(
+            eq(aiSuggestions.userId, userId),
+            eq(aiSuggestions.manualId, manualId),
+            eq(aiSuggestions.status, "pending"),
+          ),
+        )
+        .returning({ id: aiSuggestions.id });
+      return rows.length;
+    },
   };
 }

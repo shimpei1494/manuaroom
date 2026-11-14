@@ -19,6 +19,7 @@ import {
   IconMessageChatbot,
   IconSparkles,
   IconTrash,
+  IconX,
 } from "@tabler/icons-react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -30,6 +31,7 @@ import {
   acceptAiSuggestionFn,
   acceptAllAiSuggestionsFn,
   rejectAiSuggestionFn,
+  rejectAllAiSuggestionsFn,
 } from "../../server-functions/ai-suggestions";
 import { analyzeManualFn, deleteManualFn } from "../../server-functions/manuals";
 import { formatDate, formatInterval } from "../maintenance/format";
@@ -224,7 +226,12 @@ export function ManualCard({
                 AI 候補 ({pending.length} pending / {accepted.length} accepted / {rejected.length}{" "}
                 rejected)
               </Text>
-              {pending.length >= 2 && <AcceptAllButton manualId={manual.id} pending={pending} />}
+              {pending.length >= 2 && (
+                <Group gap="xs">
+                  <AcceptAllButton manualId={manual.id} pending={pending} />
+                  <RejectAllButton manualId={manual.id} pending={pending} />
+                </Group>
+              )}
             </Group>
             {pending.length === 0 && (
               <Text size="xs" c="dimmed">
@@ -306,6 +313,68 @@ function AcceptAllButton({ manualId, pending }: { manualId: string; pending: AiS
       onClick={handleClick}
     >
       すべて承認 ({count})
+    </Button>
+  );
+}
+
+function RejectAllButton({ manualId, pending }: { manualId: string; pending: AiSuggestion[] }) {
+  const router = useRouter();
+  const rejectAll = useServerFn(rejectAllAiSuggestionsFn);
+  const [busy, setBusy] = useState(false);
+  const count = pending.length.toString();
+
+  const handleClick = () => {
+    modals.openConfirmModal({
+      title: "候補をまとめて却下",
+      centered: true,
+      children: (
+        <Stack gap="xs">
+          <Text size="sm">次の {count} 件の候補を却下します。タスクは登録されません。</Text>
+          <Stack gap={2} component="ul" m={0} pl="md">
+            {pending.map((s) => (
+              <Text key={s.id} size="sm" component="li">
+                {s.payload.title}
+              </Text>
+            ))}
+          </Stack>
+          <Text size="xs" c="dimmed">
+            もう一度「AIで解析」すると、候補を出し直せます。
+          </Text>
+        </Stack>
+      ),
+      labels: { confirm: `${count} 件を却下`, cancel: "キャンセル" },
+      confirmProps: { color: "gray" },
+      onConfirm: async () => {
+        setBusy(true);
+        try {
+          const { rejectedCount } = await rejectAll({ data: { manualId } });
+          notifications.show({
+            color: "gray",
+            message: `${rejectedCount.toString()} 件の候補を却下しました`,
+          });
+          await router.invalidate();
+        } catch (e) {
+          notifications.show({
+            color: "red",
+            title: "まとめて却下できませんでした",
+            message: errorMessage(e),
+          });
+        } finally {
+          setBusy(false);
+        }
+      },
+    });
+  };
+
+  return (
+    <Button
+      size="xs"
+      variant="default"
+      leftSection={<IconX size={14} />}
+      loading={busy}
+      onClick={handleClick}
+    >
+      すべて却下 ({count})
     </Button>
   );
 }

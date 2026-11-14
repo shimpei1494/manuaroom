@@ -5,6 +5,7 @@ import { createFakeDeps, makeAiSuggestion } from "../testing/fake-deps";
 import { acceptAiSuggestion } from "./accept-ai-suggestion";
 import { acceptAllAiSuggestions } from "./accept-all-ai-suggestions";
 import { rejectAiSuggestion } from "./reject-ai-suggestion";
+import { rejectAllAiSuggestions } from "./reject-all-ai-suggestions";
 
 describe("acceptAiSuggestion", () => {
   test("提案をタスクにし、今日 + 周期を予定日にして出典を残す", async () => {
@@ -135,5 +136,51 @@ describe("rejectAiSuggestion", () => {
     });
     expect(saved?.status).toBe("rejected");
     expect(await deps.maintenanceTaskRepository.listByUser(suggestion.userId)).toEqual([]);
+  });
+});
+
+describe("rejectAllAiSuggestions", () => {
+  test("説明書の未判断の候補を全部却下し、判断済みの候補と他の説明書には触らない", async () => {
+    const deps = createFakeDeps();
+    const pendings = [makeAiSuggestion(), makeAiSuggestion()];
+    const accepted = makeAiSuggestion({ status: "accepted" });
+    const base = { userId: accepted.userId, manualId: accepted.manualId };
+    await deps.aiSuggestionRepository.replaceByManual({
+      ...base,
+      suggestions: [...pendings, accepted],
+    });
+    const otherManual = makeAiSuggestion({ manualId: "manual-2" });
+    await deps.aiSuggestionRepository.replaceByManual({
+      userId: otherManual.userId,
+      manualId: otherManual.manualId,
+      suggestions: [otherManual],
+    });
+
+    expect(await rejectAllAiSuggestions(deps, base.manualId)).toBe(2);
+
+    const statuses = (await deps.aiSuggestionRepository.listByManual(base)).map((s) => s.status);
+    expect(statuses).toEqual(["rejected", "rejected", "accepted"]);
+    const other = await deps.aiSuggestionRepository.findById({
+      userId: otherManual.userId,
+      suggestionId: otherManual.id,
+    });
+    expect(other?.status).toBe("pending");
+    expect(await deps.maintenanceTaskRepository.listByUser(base.userId)).toEqual([]);
+  });
+
+  test("一括却下のあとに個別の承認ボタンが押されても、タスクは作られない", async () => {
+    const deps = createFakeDeps();
+    const suggestion = makeAiSuggestion();
+    await deps.aiSuggestionRepository.replaceByManual({
+      userId: suggestion.userId,
+      manualId: suggestion.manualId,
+      suggestions: [suggestion],
+    });
+
+    await rejectAllAiSuggestions(deps, suggestion.manualId);
+
+    await expect(acceptAiSuggestion(deps, suggestion.id)).rejects.toThrow(/not pending/);
+    expect(await deps.maintenanceTaskRepository.listByUser(suggestion.userId)).toEqual([]);
+    expect(await rejectAllAiSuggestions(deps, suggestion.manualId)).toBe(0);
   });
 });
