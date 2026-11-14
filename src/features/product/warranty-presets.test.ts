@@ -1,6 +1,11 @@
 import { describe, expect, test } from "vite-plus/test";
 
-import { dateValueToDate, formatWarrantyPeriod, warrantyUntilValue } from "./warranty-presets";
+import {
+  dateValueToDate,
+  formatWarrantyPeriod,
+  jstDateValue,
+  warrantyUntilValue,
+} from "./warranty-presets";
 
 describe("formatWarrantyPeriod", () => {
   test("12 の倍数は年、それ以外はか月で表す", () => {
@@ -33,5 +38,16 @@ describe("warrantyUntilValue", () => {
 
   test("購入日がなければ null", () => {
     expect(warrantyUntilValue(null, 12)).toBeNull();
+  });
+});
+
+describe("jstDateValue", () => {
+  test("日本時間の日付を YYYY-MM-DD で返す", () => {
+    expect(jstDateValue(new Date("2026-11-14T03:00:00Z"))).toBe("2026-11-14");
+  });
+
+  test("UTC ではまだ前日でも、日本時間で日付が変わっていれば翌日になる", () => {
+    expect(jstDateValue(new Date("2026-11-14T15:00:00Z"))).toBe("2026-11-15");
+    expect(jstDateValue(new Date("2026-12-31T15:30:00Z"))).toBe("2027-01-01");
   });
 });
