@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-
 import type { Page } from "@playwright/test";
 
 async function createProduct(page: Page, name: string, manufacturer: string) {
