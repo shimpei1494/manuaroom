@@ -8,13 +8,14 @@ import {
   TextInput,
   Textarea,
 } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
+import type { DateValue } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { IconPlus } from "@tabler/icons-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 
 import { CreateFromManualPanel } from "../../features/product/CreateFromManualPanel";
+import { PurchaseWarrantyFields } from "../../features/product/PurchaseWarrantyFields";
 import { emptyToNull } from "../../features/shared/form";
 import { PageHeader } from "../../features/shared/PageHeader";
 import { createProductFn } from "../../server-functions/products";
@@ -29,8 +30,8 @@ type FormValues = {
   modelNumber: string;
   category: string;
   location: string;
-  purchaseDate: Date | null;
-  warrantyUntil: Date | null;
+  purchaseDate: DateValue;
+  warrantyUntil: DateValue;
   memo: string;
 };
 
@@ -97,19 +98,13 @@ function NewProductPage() {
                 placeholder="例: リビング"
                 {...form.getInputProps("location")}
               />
-              <DateInput
-                clearable
-                label="購入日"
-                valueFormat="YYYY/MM/DD"
-                {...form.getInputProps("purchaseDate")}
-              />
-              <DateInput
-                clearable
-                label="保証期限"
-                valueFormat="YYYY/MM/DD"
-                {...form.getInputProps("warrantyUntil")}
-              />
             </SimpleGrid>
+            <PurchaseWarrantyFields
+              values={form.values}
+              onChange={(next) => {
+                form.setValues(next);
+              }}
+            />
             <Textarea label="メモ" autosize minRows={2} {...form.getInputProps("memo")} />
             <Group justify="flex-end">
               <Button
