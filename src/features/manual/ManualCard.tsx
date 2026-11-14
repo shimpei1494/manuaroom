@@ -228,8 +228,8 @@ export function ManualCard({
               </Text>
               {pending.length >= 2 && (
                 <Group gap="xs">
-                  <RejectAllButton manualId={manual.id} pending={pending} />
                   <AcceptAllButton manualId={manual.id} pending={pending} />
+                  <RejectAllButton manualId={manual.id} pending={pending} />
                 </Group>
               )}
             </Group>
