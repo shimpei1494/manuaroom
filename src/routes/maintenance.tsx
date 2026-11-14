@@ -3,7 +3,6 @@ import {
   IconAlertTriangle,
   IconCalendarDue,
   IconCalendarMonth,
-  IconCalendarOff,
   IconClockHour4,
   IconTool,
   type Icon,
@@ -42,17 +41,28 @@ function MaintenancePage() {
   const productMap = new Map(products.map((p) => [p.id, p] as const));
   const today = useToday();
 
-  const { overdue, thisWeek, nextMonth, later, noDate } = classifyByDueDate(tasks, today);
+  // 予定日のないタスク (周期なし) は「必要になったら見るメモ」なので一覧には出さず、製品ページで見る (Issue #51)
+  const { overdue, thisWeek, nextMonth, later } = classifyByDueDate(tasks, today);
+  const scheduledCount = overdue.length + thisWeek.length + nextMonth.length + later.length;
 
   return (
     <Stack gap="lg">
-      <PageHeader icon={IconTool} title="メンテナンス" description="すべてのお手入れを期限順に" />
+      <PageHeader icon={IconTool} title="メンテナンス" description="予定のあるお手入れを期限順に" />
       {tasks.length === 0 && (
         <EmptyState icon={IconTool} title="まだタスクが登録されていません">
           <Anchor component={Link} to="/products">
             製品ページ
           </Anchor>
           から登録してください。
+        </EmptyState>
+      )}
+      {tasks.length > 0 && scheduledCount === 0 && (
+        <EmptyState icon={IconTool} title="予定のあるタスクはありません">
+          予定日のないタスクは
+          <Anchor component={Link} to="/products">
+            各製品のページ
+          </Anchor>
+          で見られます。
         </EmptyState>
       )}
       <Section
@@ -81,13 +91,6 @@ function MaintenancePage() {
         icon={IconClockHour4}
         color="gray"
         tasks={later}
-        productMap={productMap}
-      />
-      <Section
-        title="予定なし"
-        icon={IconCalendarOff}
-        color="gray"
-        tasks={noDate}
         productMap={productMap}
       />
     </Stack>

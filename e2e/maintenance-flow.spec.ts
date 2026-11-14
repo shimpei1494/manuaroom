@@ -137,3 +137,25 @@ test("期限切れのタスクを今やることからまとめてスキップ�
   await expect(page.getByText("取り消しました")).toBeVisible();
   await expect(todoCard(page, productName)).toHaveCount(2);
 });
+
+test("予定日のないタスクはメンテナンス一覧に出さず、製品ページでだけ見られる", async ({ page }) => {
+  const productName = `E2E 製品 ${crypto.randomUUID().slice(0, 8)}`;
+  await open(page, "/products/new");
+  await page.getByLabel("製品名").fill(productName);
+  await page.getByLabel("製品名").press("Enter");
+  await page.getByRole("link", { name: productName }).first().click();
+  await expect(page.getByRole("heading", { name: productName })).toBeVisible();
+
+  // 周期も予定日も入れない「必要になったら見る」メモ的なタスク
+  await page.getByRole("button", { name: "タスクを追加" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("タスク名").fill("取扱説明書のメモ");
+  await dialog.getByRole("button", { name: "追加" }).click();
+  await expect(page.getByText("タスクを追加しました")).toBeVisible();
+  await expect(page.getByRole("row", { name: /取扱説明書のメモ/ })).toBeVisible();
+
+  await open(page, "/maintenance");
+  await expect(page.getByRole("heading", { name: "メンテナンス" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "予定なし" })).toHaveCount(0);
+  await expect(page.getByRole("row", { name: new RegExp(productName) })).toHaveCount(0);
+});
