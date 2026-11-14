@@ -168,6 +168,31 @@ describe("aiSuggestionRepository.replaceByManual", () => {
   });
 });
 
+describe("aiSuggestionRepository.rejectPendingByManual", () => {
+  test("自分の説明書の未判断の候補だけを却下し、件数を返す", async () => {
+    const repo = createAiSuggestionRepository(db);
+    const product = makeProduct();
+    const manual = makeManual({ userId: product.userId, productId: product.id });
+    await createProductRepository(db).create(product);
+    await createManualRepository(db).create(manual);
+    const base = { userId: manual.userId, productId: product.id, manualId: manual.id };
+    const accepted = makeAiSuggestion({ ...base, status: "accepted" });
+    await repo.replaceByManual({
+      ...base,
+      suggestions: [makeAiSuggestion(base), makeAiSuggestion(base), accepted],
+    });
+
+    expect(await repo.rejectPendingByManual({ userId: OTHER_USER_ID, manualId: manual.id })).toBe(
+      0,
+    );
+    expect(await repo.rejectPendingByManual({ userId: base.userId, manualId: manual.id })).toBe(2);
+
+    const list = await repo.listByManual({ userId: base.userId, manualId: manual.id });
+    expect(list.filter((s) => s.status === "rejected")).toHaveLength(2);
+    expect(list.find((s) => s.id === accepted.id)?.status).toBe("accepted");
+  });
+});
+
 describe("maintenanceLogRepository", () => {
   async function seedTask(userId?: string) {
     const product = makeProduct(userId ? { userId } : {});

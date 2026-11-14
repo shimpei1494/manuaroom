@@ -5,6 +5,7 @@ import { acceptAiSuggestion } from "../application/usecases/accept-ai-suggestion
 import { acceptAllAiSuggestions } from "../application/usecases/accept-all-ai-suggestions";
 import { listAiSuggestions } from "../application/usecases/list-ai-suggestions";
 import { rejectAiSuggestion } from "../application/usecases/reject-ai-suggestion";
+import { rejectAllAiSuggestions } from "../application/usecases/reject-all-ai-suggestions";
 import { getDeps } from "../infrastructure/deps";
 
 const ManualIdSchema = z.object({ manualId: z.string().min(1) });
@@ -33,4 +34,11 @@ export const rejectAiSuggestionFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => SuggestionIdSchema.parse(data))
   .handler(async ({ data }) => {
     await rejectAiSuggestion(getDeps(), data.suggestionId);
+  });
+
+export const rejectAllAiSuggestionsFn = createServerFn({ method: "POST" })
+  .validator((data: unknown) => ManualIdSchema.parse(data))
+  .handler(async ({ data }) => {
+    const rejectedCount = await rejectAllAiSuggestions(getDeps(), data.manualId);
+    return { rejectedCount };
   });

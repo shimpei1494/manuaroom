@@ -454,6 +454,15 @@ function createInMemoryAiSuggestionRepository(store: SuggestionStore): AiSuggest
       );
       return Promise.resolve();
     },
+    rejectPendingByManual({ userId, manualId }) {
+      let count = 0;
+      store.rows = store.rows.map((s) => {
+        if (s.userId !== userId || s.manualId !== manualId || s.status !== "pending") return s;
+        count += 1;
+        return { ...s, status: "rejected" };
+      });
+      return Promise.resolve(count);
+    },
   };
 }
 

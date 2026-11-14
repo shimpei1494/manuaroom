@@ -107,7 +107,7 @@ const journeys = {
     await shot(page, "calendar-1-today");
   },
 
-  // 説明書アップロード → AI 解析 (モック) → 候補を 1 件ずつ承認 / まとめて承認 → タスクになる → 説明書に質問 → 削除 (ADR 0008)
+  // 説明書アップロード → AI 解析 (モック) → 候補を 1 件ずつ承認 / まとめて承認 / まとめて却下 → タスクになる → 説明書に質問 → 削除 (ADR 0008)
   async "manual-ai"(page) {
     await createProduct(page);
     await page.locator('input[type="file"]').setInputFiles({
@@ -143,6 +143,19 @@ const journeys = {
     await expect(page.getByRole("row", { name: /リモコンの電池交換/ })).toBeVisible();
     await expect(page.getByText("未処理の候補はありません。")).toBeVisible();
     await shot(page, "manual-3c-accepted-all");
+
+    // もう一度解析して候補を出し直し、今度はまとめて却下する。タスクは増えない
+    await page.getByRole("button", { name: "AIで解析" }).click();
+    await expect(page.getByText("3 件の候補が抽出されました")).toBeVisible();
+    await page.getByRole("button", { name: "すべて却下 (3)" }).click();
+    const rejectConfirm = page.getByRole("dialog", { name: "候補をまとめて却下" });
+    await expect(rejectConfirm).toContainText("フィルター清掃");
+    await shot(page, "manual-3d-reject-all-confirm");
+    await rejectConfirm.getByRole("button", { name: "3 件を却下" }).click();
+    await expect(page.getByText("3 件の候補を却下しました")).toBeVisible();
+    await expect(page.getByText("未処理の候補はありません。")).toBeVisible();
+    await expect(page.getByRole("row", { name: /フィルター清掃/ })).toHaveCount(1);
+    await shot(page, "manual-3e-rejected-all");
 
     await page.getByRole("button", { name: "質問する" }).click();
     const drawer = page.getByRole("dialog", { name: /に質問/ });
