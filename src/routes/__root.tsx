@@ -20,6 +20,7 @@ import {
   IconAlertTriangle,
   IconCalendarEvent,
   IconChecklist,
+  IconMap2,
   IconMapQuestion,
   IconPackage,
   IconTool,
@@ -120,6 +121,7 @@ const NAV_ITEMS: { to: string; label: string; shortLabel: string; icon: Icon }[]
   { to: "/maintenance", label: "メンテナンス", shortLabel: "メンテ", icon: IconTool },
   { to: "/calendar", label: "カレンダー", shortLabel: "カレンダー", icon: IconCalendarEvent },
   { to: "/products", label: "製品", shortLabel: "製品", icon: IconPackage },
+  { to: "/map", label: "間取り", shortLabel: "間取り", icon: IconMap2 },
 ];
 
 function isActive(pathname: string, to: string) {

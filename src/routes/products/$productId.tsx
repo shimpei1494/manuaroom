@@ -11,14 +11,16 @@ import { listAiSuggestionsFn } from "../../server-functions/ai-suggestions";
 import { listMaintenanceTasksFn } from "../../server-functions/maintenance-tasks";
 import { listManualsFn } from "../../server-functions/manuals";
 import { listProductLinksFn } from "../../server-functions/product-links";
+import { getProductPlacementFn } from "../../server-functions/product-placements";
 import { getProductFn } from "../../server-functions/products";
 
 async function loadProductDetail(productId: string) {
-  const [product, manuals, tasks, links] = await Promise.all([
+  const [product, manuals, tasks, links, placement] = await Promise.all([
     getProductFn({ data: { productId } }),
     listManualsFn({ data: { productId } }),
     listMaintenanceTasksFn({ data: { productId } }),
     listProductLinksFn({ data: { productId } }),
+    getProductPlacementFn({ data: { productId } }),
   ]);
   const suggestionsByManual = await Promise.all(
     manuals.map((manual) =>
@@ -32,7 +34,14 @@ async function loadProductDetail(productId: string) {
   for (const { manualId, suggestions } of suggestionsByManual) {
     suggestionsMap[manualId] = suggestions;
   }
-  return { product, manuals, tasks, links, suggestionsByManualId: suggestionsMap };
+  return {
+    product,
+    manuals,
+    tasks,
+    links,
+    isPlacedOnMap: placement !== null,
+    suggestionsByManualId: suggestionsMap,
+  };
 }
 
 export const Route = createFileRoute("/products/$productId")({
@@ -43,11 +52,12 @@ export const Route = createFileRoute("/products/$productId")({
 });
 
 function ProductDetailPage() {
-  const { product, manuals, tasks, links, suggestionsByManualId } = Route.useLoaderData();
+  const { product, manuals, tasks, links, isPlacedOnMap, suggestionsByManualId } =
+    Route.useLoaderData();
   return (
     <Stack gap="lg">
       <ProductHeader product={product} />
-      <ProductInfo product={product} />
+      <ProductInfo product={product} isPlacedOnMap={isPlacedOnMap} />
       <ManualsSection
         productId={product.id}
         productName={product.name}

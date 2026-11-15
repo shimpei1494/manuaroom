@@ -198,6 +198,135 @@ h4 {
   text-decoration: none;
 }
 
+/* 間取りの平面図 (src/features/home-map/FloorPlan.tsx)。線の太さは図の大きさによらず一定にする */
+.floor-plan {
+  position: relative;
+  margin-inline: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.floor-plan > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.floor-plan :where(polygon, line, path) {
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.floor-plan-room {
+  stroke: var(--mantine-color-text);
+  stroke-width: 2.5px;
+}
+.floor-plan-room[data-room-type="balcony"] {
+  stroke-dasharray: 6 4;
+  stroke-width: 1.5px;
+}
+.floor-plan-opening {
+  stroke: var(--mantine-color-body);
+  stroke-width: 5px;
+  stroke-linecap: butt;
+}
+.floor-plan-door-leaf {
+  stroke: var(--mantine-color-text);
+  stroke-width: 1.5px;
+}
+.floor-plan-door-arc {
+  fill: none;
+  stroke: var(--mantine-color-dimmed);
+  stroke-width: 1px;
+  stroke-dasharray: 3 3;
+}
+.floor-plan-window-frame {
+  stroke: var(--mantine-color-blue-5);
+  stroke-width: 6px;
+  stroke-linecap: butt;
+}
+.floor-plan-window-glass {
+  stroke: var(--mantine-color-body);
+  stroke-width: 2px;
+  stroke-linecap: butt;
+}
+.floor-plan-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--mantine-color-dimmed);
+  pointer-events: none;
+}
+
+/* 間取りの上の製品の点。図の大きさによらず同じ大きさで、指で押しやすくする */
+.map-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: var(--mantine-color-white);
+  background: var(--marker-color, var(--mantine-primary-color-filled));
+  border: 2px solid var(--mantine-color-body);
+  box-shadow: var(--mantine-shadow-sm);
+  transition: transform 120ms ease;
+}
+/* 見た目より広く押せるようにする */
+.map-marker::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+}
+@media (hover: hover) {
+  .map-marker:hover {
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+.map-marker[data-highlighted]::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 3px solid var(--marker-color, var(--mantine-primary-color-filled));
+  animation: marker-pulse 1.6s ease-out infinite;
+}
+/* 置く位置を選んでいるときの点。ドラッグで動かす */
+.map-marker[data-draft] {
+  width: 32px;
+  height: 32px;
+  cursor: grab;
+  touch-action: none;
+  outline: 3px solid var(--mantine-color-apricot-5);
+  outline-offset: 2px;
+}
+.map-marker[data-draft][data-dragging] {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.2);
+}
+.map-marker[data-muted] {
+  opacity: 0.35;
+  pointer-events: none;
+}
+.floor-plan[role="button"] {
+  cursor: crosshair;
+}
+
+@keyframes marker-pulse {
+  from {
+    opacity: 0.9;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
 @keyframes page-enter {
   from {
     opacity: 0;

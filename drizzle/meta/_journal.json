@@ -29,6 +29,20 @@
       "when": 1793532149434,
       "tag": "0003_lowly_shinko_yamashiro",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1794704306817,
+      "tag": "0004_legal_songbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1794705022113,
+      "tag": "0005_cloudy_marauders",
+      "breakpoints": true
     }
   ]
 }

@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as ManualsManualIdRouteImport } from './routes/manuals/$manualId'
+import { Route as MapIndexRouteImport } from './routes/map/index'
+import { Route as MapSettingsRouteImport } from './routes/map/settings'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
 import { Route as ProductsProductIdRouteImport } from './routes/products/$productId'
 import { Route as ProductsNewRouteImport } from './routes/products/new'
@@ -37,6 +39,16 @@ const MaintenanceRoute = MaintenanceRouteImport.update({
 const ManualsManualIdRoute = ManualsManualIdRouteImport.update({
   id: '/manuals/$manualId',
   path: '/manuals/$manualId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapIndexRoute = MapIndexRouteImport.update({
+  id: '/map/',
+  path: '/map/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapSettingsRoute = MapSettingsRouteImport.update({
+  id: '/map/settings',
+  path: '/map/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
@@ -70,8 +82,10 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/maintenance': typeof MaintenanceRoute
   '/manuals/$manualId': typeof ManualsManualIdRoute
+  '/map/settings': typeof MapSettingsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/new': typeof ProductsNewRoute
+  '/map/': typeof MapIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/api/manuals/$manualId/chat': typeof ApiManualsManualIdChatRoute
   '/api/manuals/$manualId/file': typeof ApiManualsManualIdFileRoute
@@ -81,8 +95,10 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/maintenance': typeof MaintenanceRoute
   '/manuals/$manualId': typeof ManualsManualIdRoute
+  '/map/settings': typeof MapSettingsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/new': typeof ProductsNewRoute
+  '/map': typeof MapIndexRoute
   '/products': typeof ProductsIndexRoute
   '/api/manuals/$manualId/chat': typeof ApiManualsManualIdChatRoute
   '/api/manuals/$manualId/file': typeof ApiManualsManualIdFileRoute
@@ -93,8 +109,10 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/maintenance': typeof MaintenanceRoute
   '/manuals/$manualId': typeof ManualsManualIdRoute
+  '/map/settings': typeof MapSettingsRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/products/new': typeof ProductsNewRoute
+  '/map/': typeof MapIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/api/manuals/$manualId/chat': typeof ApiManualsManualIdChatRoute
   '/api/manuals/$manualId/file': typeof ApiManualsManualIdFileRoute
@@ -106,8 +124,10 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/maintenance'
     | '/manuals/$manualId'
+    | '/map/settings'
     | '/products/$productId'
     | '/products/new'
+    | '/map/'
     | '/products/'
     | '/api/manuals/$manualId/chat'
     | '/api/manuals/$manualId/file'
@@ -117,8 +137,10 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/maintenance'
     | '/manuals/$manualId'
+    | '/map/settings'
     | '/products/$productId'
     | '/products/new'
+    | '/map'
     | '/products'
     | '/api/manuals/$manualId/chat'
     | '/api/manuals/$manualId/file'
@@ -128,8 +150,10 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/maintenance'
     | '/manuals/$manualId'
+    | '/map/settings'
     | '/products/$productId'
     | '/products/new'
+    | '/map/'
     | '/products/'
     | '/api/manuals/$manualId/chat'
     | '/api/manuals/$manualId/file'
@@ -140,8 +164,10 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   MaintenanceRoute: typeof MaintenanceRoute
   ManualsManualIdRoute: typeof ManualsManualIdRoute
+  MapSettingsRoute: typeof MapSettingsRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
   ProductsNewRoute: typeof ProductsNewRoute
+  MapIndexRoute: typeof MapIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiManualsManualIdChatRoute: typeof ApiManualsManualIdChatRoute
   ApiManualsManualIdFileRoute: typeof ApiManualsManualIdFileRoute
@@ -175,6 +201,20 @@ declare module '@tanstack/react-router' {
       path: '/manuals/$manualId'
       fullPath: '/manuals/$manualId'
       preLoaderRoute: typeof ManualsManualIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map/': {
+      id: '/map/'
+      path: '/map'
+      fullPath: '/map/'
+      preLoaderRoute: typeof MapIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map/settings': {
+      id: '/map/settings'
+      path: '/map/settings'
+      fullPath: '/map/settings'
+      preLoaderRoute: typeof MapSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/': {
@@ -220,8 +260,10 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   MaintenanceRoute: MaintenanceRoute,
   ManualsManualIdRoute: ManualsManualIdRoute,
+  MapSettingsRoute: MapSettingsRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
   ProductsNewRoute: ProductsNewRoute,
+  MapIndexRoute: MapIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiManualsManualIdChatRoute: ApiManualsManualIdChatRoute,
   ApiManualsManualIdFileRoute: ApiManualsManualIdFileRoute,

@@ -1,4 +1,4 @@
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 import {
   AI_SUGGESTION_STATUS_VALUES,
@@ -129,4 +129,23 @@ export const aiSuggestions = sqliteTable("ai_suggestions", {
   payloadJson: text("payload_json").notNull(),
   status: text("status", { enum: AI_SUGGESTION_STATUS_VALUES }).notNull().default("pending"),
   createdAt: createdAt(),
+});
+
+// 家の間取り (docs/home-map.md)。家族で 1 枚を共有するので、共有のユーザー ID ごとに 1 行。
+// 中身は domain の HomeLayoutSchema で確かめた JSON
+export const homeLayouts = sqliteTable("home_layouts", {
+  userId: text("user_id").primaryKey(),
+  layoutJson: text("layout_json").notNull(),
+  updatedAt: updatedAt(),
+});
+
+// 製品を間取りのどこに置いたか (1 製品 1 か所、座標は間取りと同じ cm)。家族で共有する
+export const productPlacements = sqliteTable("product_placements", {
+  productId: text("product_id")
+    .primaryKey()
+    .references(() => products.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(),
+  x: real("x").notNull(),
+  y: real("y").notNull(),
+  updatedAt: updatedAt(),
 });
