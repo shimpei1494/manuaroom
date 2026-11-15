@@ -11,6 +11,7 @@ import type { MaintenanceLog } from "../../../domain/maintenance/maintenance-log
 import { clearTables, startLocalCloudflareEnv } from "../../testing/local-cloudflare-env";
 import { createDb, type Db } from "../client";
 import { createAiSuggestionRepository } from "./ai-suggestion-repository";
+import { createHomeLayoutRepository } from "./home-layout-repository";
 import { createMaintenanceLogRepository } from "./maintenance-log-repository";
 import { createMaintenanceTaskRepository } from "./maintenance-task-repository";
 import { createManualRepository } from "./manual-repository";
@@ -281,5 +282,47 @@ describe("maintenanceLogRepository", () => {
     });
 
     expect(logs).toEqual([inside]);
+  });
+});
+
+describe("homeLayoutRepository", () => {
+  const layout = (name: string) => ({
+    version: 1 as const,
+    rooms: [
+      {
+        id: "dk",
+        name,
+        type: "dining" as const,
+        rect: [0, 0, 360, 300] as [number, number, number, number],
+      },
+    ],
+  });
+
+  test("ユーザー ID ごとに 1 件で、保存し直すと置き換わる", async () => {
+    const repo = createHomeLayoutRepository(db);
+    await repo.save({
+      userId: "household",
+      layout: layout("DK"),
+      updatedAt: new Date("2026-11-01T00:00:00Z"),
+    });
+    await repo.save({
+      userId: "household",
+      layout: layout("ダイニング"),
+      updatedAt: new Date("2026-11-02T00:00:00Z"),
+    });
+    await repo.save({
+      userId: OTHER_USER_ID,
+      layout: layout("他人の DK"),
+      updatedAt: new Date("2026-11-03T00:00:00Z"),
+    });
+
+    const found = await repo.find("household");
+
+    expect(found).toEqual({
+      userId: "household",
+      layout: layout("ダイニング"),
+      updatedAt: new Date("2026-11-02T00:00:00Z"),
+    });
+    expect(await repo.find("nobody")).toBeNull();
   });
 });

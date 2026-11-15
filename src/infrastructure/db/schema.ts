@@ -130,3 +130,11 @@ export const aiSuggestions = sqliteTable("ai_suggestions", {
   status: text("status", { enum: AI_SUGGESTION_STATUS_VALUES }).notNull().default("pending"),
   createdAt: createdAt(),
 });
+
+// 家の間取り (docs/home-map.md)。家族で 1 枚を共有するので、共有のユーザー ID ごとに 1 行。
+// 中身は domain の HomeLayoutSchema で確かめた JSON
+export const homeLayouts = sqliteTable("home_layouts", {
+  userId: text("user_id").primaryKey(),
+  layoutJson: text("layout_json").notNull(),
+  updatedAt: updatedAt(),
+});

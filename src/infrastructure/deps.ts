@@ -7,6 +7,7 @@ import { systemClock } from "./clock/system-clock";
 import { createDb } from "./db/client";
 import { createAiSuggestionAcceptance } from "./db/repositories/ai-suggestion-acceptance";
 import { createAiSuggestionRepository } from "./db/repositories/ai-suggestion-repository";
+import { createHomeLayoutRepository } from "./db/repositories/home-layout-repository";
 import { createMaintenanceLedger } from "./db/repositories/maintenance-ledger";
 import { createMaintenanceLogRepository } from "./db/repositories/maintenance-log-repository";
 import { createMaintenanceTaskRepository } from "./db/repositories/maintenance-task-repository";
@@ -35,6 +36,7 @@ function createDeps(env: RuntimeEnv): Deps {
     maintenanceLedger: createMaintenanceLedger(db),
     aiSuggestionRepository: createAiSuggestionRepository(db),
     aiSuggestionAcceptance: createAiSuggestionAcceptance(db),
+    homeLayoutRepository: createHomeLayoutRepository(db),
     aiService: createTanstackAiService(env),
     notifier: env.LINE_CHANNEL_ACCESS_TOKEN
       ? createLineBroadcastNotifier({ channelAccessToken: env.LINE_CHANNEL_ACCESS_TOKEN })

@@ -1,4 +1,5 @@
 import type { AiSuggestion, MaintenancePayload } from "../../domain/ai-suggestion/ai-suggestion";
+import type { SavedHomeLayout } from "../../domain/home-map/home-layout";
 import type { MaintenanceLog } from "../../domain/maintenance/maintenance-log";
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
 import type { Manual } from "../../domain/manual/manual";
@@ -10,6 +11,7 @@ import type { AiServicePort } from "../ports/ai-service-port";
 import type { AiSuggestionAcceptancePort } from "../ports/ai-suggestion-acceptance-port";
 import type { AiSuggestionRepositoryPort } from "../ports/ai-suggestion-repository-port";
 import type { FileStoragePort } from "../ports/file-storage-port";
+import type { HomeLayoutRepositoryPort } from "../ports/home-layout-repository-port";
 import type { MaintenanceLedgerPort } from "../ports/maintenance-ledger-port";
 import type { MaintenanceLogRepositoryPort } from "../ports/maintenance-log-repository-port";
 import type { MaintenanceTaskRepositoryPort } from "../ports/maintenance-task-repository-port";
@@ -62,6 +64,7 @@ export function createFakeDeps(options: FakeDepsOptions = {}): FakeDeps {
     maintenanceLedger: createInMemoryMaintenanceLedger(maintenanceStore),
     aiSuggestionRepository: createInMemoryAiSuggestionRepository(suggestionStore),
     aiSuggestionAcceptance: createInMemoryAiSuggestionAcceptance(suggestionStore, maintenanceStore),
+    homeLayoutRepository: createInMemoryHomeLayoutRepository(),
     aiService: {
       analyzeManualForMaintenance: options.analyzeManual ?? (() => Promise.resolve([])),
       extractProductInfo:
@@ -262,6 +265,19 @@ function createInMemoryProductLinkRepository(): ProductLinkRepositoryPort {
     },
     delete({ userId, linkId }) {
       if (owned(userId, linkId)) rows.delete(linkId);
+      return Promise.resolve();
+    },
+  };
+}
+
+function createInMemoryHomeLayoutRepository(): HomeLayoutRepositoryPort {
+  const rows = new Map<string, SavedHomeLayout>();
+  return {
+    find(userId) {
+      return Promise.resolve(rows.get(userId) ?? null);
+    },
+    save(layout) {
+      rows.set(layout.userId, layout);
       return Promise.resolve();
     },
   };
