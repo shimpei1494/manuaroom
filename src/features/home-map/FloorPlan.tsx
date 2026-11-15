@@ -1,12 +1,14 @@
-import { useId, type CSSProperties, type ReactNode } from "react";
+import { useId, type CSSProperties, type HTMLAttributes, type ReactNode } from "react";
 
 import {
   roomLabelPosition,
   roomPolygon,
   type HomeLayout,
+  type Point,
   type RoomType,
 } from "../../domain/home-map/home-layout";
 import {
+  clientToLayout,
   doorShape,
   floorPlanViewBox,
   polygonPoints,
@@ -38,10 +40,13 @@ const ROOM_COLORS: Record<RoomType, string> = {
 export function FloorPlan({
   layout,
   children,
+  onPlanClick,
 }: {
   layout: HomeLayout;
   /** 図の上に重ねるもの。位置は floor-plan-geometry の toPercent で決める */
   children?: (view: ViewBox) => ReactNode;
+  /** 図を押したときに、押した位置 (間取りの座標、cm) を受け取る */
+  onPlanClick?: (point: Point) => void;
 }) {
   const titleId = useId();
   const view = floorPlanViewBox(layout);
@@ -51,8 +56,29 @@ export function FloorPlan({
     // 縦長の間取りでも画面に収まるよう、高さを画面の 7 割までにする
     width: `min(100%, calc(70dvh * ${ratio.toFixed(4)}))`,
   };
+  // 置く位置を選ぶとき。キーボードでは Enter で図の真ん中に置き、あとは点を矢印キーで動かす
+  const interaction: HTMLAttributes<HTMLDivElement> = onPlanClick
+    ? {
+        role: "button",
+        tabIndex: 0,
+        "aria-label": "押した場所に置く",
+        onKeyDown: (e) => {
+          if (e.target !== e.currentTarget || (e.key !== "Enter" && e.key !== " ")) return;
+          e.preventDefault();
+          onPlanClick({ x: view.x + view.width / 2, y: view.y + view.height / 2 });
+        },
+        onClick: (e) => {
+          onPlanClick(
+            clientToLayout(view, e.currentTarget.getBoundingClientRect(), {
+              x: e.clientX,
+              y: e.clientY,
+            }),
+          );
+        },
+      }
+    : {};
   return (
-    <div className="floor-plan" style={style}>
+    <div className="floor-plan" style={style} {...interaction}>
       <svg
         viewBox={`${view.x.toString()} ${view.y.toString()} ${view.width.toString()} ${view.height.toString()}`}
         aria-labelledby={titleId}

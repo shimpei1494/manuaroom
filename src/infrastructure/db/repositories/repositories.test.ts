@@ -16,6 +16,7 @@ import { createMaintenanceLogRepository } from "./maintenance-log-repository";
 import { createMaintenanceTaskRepository } from "./maintenance-task-repository";
 import { createManualRepository } from "./manual-repository";
 import { createProductLinkRepository } from "./product-link-repository";
+import { createProductPlacementRepository } from "./product-placement-repository";
 import { createProductRepository } from "./product-repository";
 
 // ローカル D1 (Miniflare) に対する結合テスト。ユーザー単位の絞り込みと、
@@ -324,5 +325,32 @@ describe("homeLayoutRepository", () => {
       updatedAt: new Date("2026-11-02T00:00:00Z"),
     });
     expect(await repo.find("nobody")).toBeNull();
+  });
+});
+
+describe("productPlacementRepository", () => {
+  test("製品ごとに 1 か所で置き直すと位置が変わり、製品を消すと一緒に消える", async () => {
+    const repo = createProductPlacementRepository(db);
+    const products = createProductRepository(db);
+    const mine = makeProduct();
+    const others = makeProduct({ userId: OTHER_USER_ID });
+    await products.create(mine);
+    await products.create(others);
+    const at = new Date("2026-11-15T00:00:00Z");
+    await repo.save({ productId: mine.id, userId: mine.userId, x: 10, y: 20, updatedAt: at });
+    await repo.save({ productId: mine.id, userId: mine.userId, x: 30.5, y: 40, updatedAt: at });
+    await repo.save({ productId: others.id, userId: OTHER_USER_ID, x: 1, y: 2, updatedAt: at });
+
+    expect(await repo.listByUser(mine.userId)).toEqual([
+      { productId: mine.id, userId: mine.userId, x: 30.5, y: 40, updatedAt: at },
+    ]);
+    expect(await repo.findByProduct({ userId: mine.userId, productId: others.id })).toBeNull();
+
+    // 他のユーザーの製品の位置は書き換えられない
+    await repo.save({ productId: others.id, userId: mine.userId, x: 9, y: 9, updatedAt: at });
+    expect((await repo.findByProduct({ userId: OTHER_USER_ID, productId: others.id }))?.x).toBe(1);
+
+    await products.delete({ userId: mine.userId, productId: mine.id });
+    expect(await repo.listByUser(mine.userId)).toEqual([]);
   });
 });

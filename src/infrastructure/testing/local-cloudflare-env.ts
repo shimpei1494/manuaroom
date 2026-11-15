@@ -40,6 +40,7 @@ export async function clearTables(db: D1Database): Promise<void> {
       "maintenance_tasks",
       "manuals",
       "product_links",
+      "product_placements",
       "products",
       "home_layouts",
     ].map((t) => db.prepare(`DELETE FROM ${t}`)),

@@ -13,6 +13,7 @@ import { createMaintenanceLogRepository } from "./db/repositories/maintenance-lo
 import { createMaintenanceTaskRepository } from "./db/repositories/maintenance-task-repository";
 import { createManualRepository } from "./db/repositories/manual-repository";
 import { createProductLinkRepository } from "./db/repositories/product-link-repository";
+import { createProductPlacementRepository } from "./db/repositories/product-placement-repository";
 import { createProductRepository } from "./db/repositories/product-repository";
 import { getRuntimeEnv, type RuntimeEnv } from "./env/runtime-env";
 import {
@@ -37,6 +38,7 @@ function createDeps(env: RuntimeEnv): Deps {
     aiSuggestionRepository: createAiSuggestionRepository(db),
     aiSuggestionAcceptance: createAiSuggestionAcceptance(db),
     homeLayoutRepository: createHomeLayoutRepository(db),
+    productPlacementRepository: createProductPlacementRepository(db),
     aiService: createTanstackAiService(env),
     notifier: env.LINE_CHANNEL_ACCESS_TOKEN
       ? createLineBroadcastNotifier({ channelAccessToken: env.LINE_CHANNEL_ACCESS_TOKEN })

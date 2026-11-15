@@ -1,5 +1,6 @@
 import type { AiSuggestion, MaintenancePayload } from "../../domain/ai-suggestion/ai-suggestion";
 import type { SavedHomeLayout } from "../../domain/home-map/home-layout";
+import type { ProductPlacement } from "../../domain/home-map/product-placement";
 import type { MaintenanceLog } from "../../domain/maintenance/maintenance-log";
 import type { MaintenanceTask } from "../../domain/maintenance/maintenance-task";
 import type { Manual } from "../../domain/manual/manual";
@@ -17,6 +18,7 @@ import type { MaintenanceLogRepositoryPort } from "../ports/maintenance-log-repo
 import type { MaintenanceTaskRepositoryPort } from "../ports/maintenance-task-repository-port";
 import type { ManualRepositoryPort } from "../ports/manual-repository-port";
 import type { ProductLinkRepositoryPort } from "../ports/product-link-repository-port";
+import type { ProductPlacementRepositoryPort } from "../ports/product-placement-repository-port";
 import type { ProductRepositoryPort } from "../ports/product-repository-port";
 
 /**
@@ -65,6 +67,7 @@ export function createFakeDeps(options: FakeDepsOptions = {}): FakeDeps {
     aiSuggestionRepository: createInMemoryAiSuggestionRepository(suggestionStore),
     aiSuggestionAcceptance: createInMemoryAiSuggestionAcceptance(suggestionStore, maintenanceStore),
     homeLayoutRepository: createInMemoryHomeLayoutRepository(),
+    productPlacementRepository: createInMemoryProductPlacementRepository(),
     aiService: {
       analyzeManualForMaintenance: options.analyzeManual ?? (() => Promise.resolve([])),
       extractProductInfo:
@@ -278,6 +281,32 @@ function createInMemoryHomeLayoutRepository(): HomeLayoutRepositoryPort {
     },
     save(layout) {
       rows.set(layout.userId, layout);
+      return Promise.resolve();
+    },
+  };
+}
+
+function createInMemoryProductPlacementRepository(): ProductPlacementRepositoryPort {
+  const rows = new Map<string, ProductPlacement>();
+  const owned = (userId: string, productId: string) => {
+    const row = rows.get(productId);
+    return row?.userId === userId ? row : null;
+  };
+  return {
+    listByUser(userId) {
+      return Promise.resolve([...rows.values()].filter((p) => p.userId === userId));
+    },
+    findByProduct({ userId, productId }) {
+      return Promise.resolve(owned(userId, productId));
+    },
+    save(placement) {
+      const existing = rows.get(placement.productId);
+      if (!existing || existing.userId === placement.userId)
+        rows.set(placement.productId, placement);
+      return Promise.resolve();
+    },
+    delete({ userId, productId }) {
+      if (owned(userId, productId)) rows.delete(productId);
       return Promise.resolve();
     },
   };

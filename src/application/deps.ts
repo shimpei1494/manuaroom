@@ -11,6 +11,7 @@ import type { MaintenanceTaskRepositoryPort } from "./ports/maintenance-task-rep
 import type { ManualRepositoryPort } from "./ports/manual-repository-port";
 import type { NotifierPort } from "./ports/notifier-port";
 import type { ProductLinkRepositoryPort } from "./ports/product-link-repository-port";
+import type { ProductPlacementRepositoryPort } from "./ports/product-placement-repository-port";
 import type { ProductRepositoryPort } from "./ports/product-repository-port";
 
 /**
@@ -30,6 +31,7 @@ export type Deps = {
   aiSuggestionRepository: AiSuggestionRepositoryPort;
   aiSuggestionAcceptance: AiSuggestionAcceptancePort;
   homeLayoutRepository: HomeLayoutRepositoryPort;
+  productPlacementRepository: ProductPlacementRepositoryPort;
   aiService: AiServicePort;
   notifier: NotifierPort;
 };
