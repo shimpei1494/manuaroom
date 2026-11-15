@@ -37,6 +37,9 @@ const apricot: MantineColorsTuple = [
   "#ac4800",
 ];
 
+// ヘッダーのアバター (boring-avatars) に使う 5 色。ミントとアプリコットだけで作り、アプリの見た目になじませる
+export const AVATAR_COLORS = [mint[7], apricot[3], mint[2], apricot[1], mint[9]];
+
 const HEADING_FONT = "'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', system-ui, sans-serif";
 
 export const theme = createTheme({

@@ -42,6 +42,8 @@ import type { ReactNode } from "react";
 
 import { ColorSchemeToggle } from "../components/ColorSchemeToggle";
 import { Logo } from "../components/Logo";
+import { UserMenu } from "../components/UserMenu";
+import { getCurrentUserFn } from "../server-functions/current-user";
 import { theme } from "../theme";
 
 import appCss from "../styles.css?url";
@@ -54,6 +56,9 @@ dayjs.locale("ja");
 export const Route = createRootRoute({
   component: RootComponent,
   errorComponent: ErrorComponent,
+  // ヘッダーのアバター用。ログイン中の人はページを移動しても変わらないので、最初の 1 回だけ読む
+  loader: () => getCurrentUserFn(),
+  staleTime: Infinity,
   head: () => ({
     links: [
       { href: "https://fonts.googleapis.com", rel: "preconnect" },
@@ -137,6 +142,7 @@ function Shell({ children }: { children: ReactNode }) {
   const renderedPathname = useRouterState({
     select: (s) => (s.resolvedLocation ?? s.location).pathname,
   });
+  const currentUser = Route.useLoaderData();
   return (
     <AppShell
       header={{ height: 60 }}
@@ -147,7 +153,10 @@ function Shell({ children }: { children: ReactNode }) {
       <AppShell.Header className="app-header">
         <Group h="100%" px="md" justify="space-between">
           <Logo />
-          <ColorSchemeToggle />
+          <Group gap="sm" wrap="nowrap">
+            <UserMenu user={currentUser} />
+            <ColorSchemeToggle />
+          </Group>
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="md" className="app-navbar">
